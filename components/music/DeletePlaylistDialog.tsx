@@ -64,7 +64,7 @@ export function DeletePlaylistDialog({
 
             <div className="mb-6">
               <p className="text-muted-foreground">
-                Bạn có chắc muốn xóa playlist <span className="font-semibold text-foreground">"{playlistName}"</span>?
+                Bạn có chắc muốn xóa playlist <span className="font-semibold text-foreground">&quot;{playlistName}&quot;</span>?
               </p>
               <p className="text-sm text-muted-foreground mt-2">
                 Hành động này không thể hoàn tác. Tất cả bài hát trong playlist sẽ bị xóa.

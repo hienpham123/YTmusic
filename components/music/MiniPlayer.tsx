@@ -61,7 +61,10 @@ export function MiniPlayer({
   // Update seek value when currentTime changes (if not seeking)
   useEffect(() => {
     if (!isSeeking) {
-      setSeekValue(currentTime);
+      // Use setTimeout to avoid cascading renders
+      setTimeout(() => {
+        setSeekValue(currentTime);
+      }, 0);
     }
   }, [currentTime, isSeeking]);
 
@@ -81,8 +84,9 @@ export function MiniPlayer({
     setSeekValue(value);
   };
 
-  const handleSeekEnd = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
+  const handleSeekEnd = (e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    const value = parseFloat(target.value);
     onSeek(value);
     setIsSeeking(false);
   };

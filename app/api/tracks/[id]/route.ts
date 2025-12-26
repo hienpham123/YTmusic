@@ -4,23 +4,24 @@ import { supabase } from "@/lib/supabase/server";
 // DELETE /api/tracks/[id] - Remove a track from playlist
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { error } = await supabase
       .from("tracks")
       .delete()
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (error) {
       throw error;
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting track:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete track" },
+      { error: error instanceof Error ? error.message : "Failed to delete track" },
       { status: 500 }
     );
   }

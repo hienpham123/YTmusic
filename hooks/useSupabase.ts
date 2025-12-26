@@ -49,7 +49,7 @@ export function useSupabase() {
 
                 if (!existingUser) {
                   console.log("👤 Creating user record for:", tempUser.email);
-                  await supabase.from("users").insert({
+                  await (supabase.from("users") as any).insert({
                     id: tempUser.id,
                     email: tempUser.email || "",
                     name: tempUser.user_metadata?.full_name || tempUser.user_metadata?.name || tempUser.email?.split("@")[0] || "User",
@@ -204,7 +204,7 @@ export function useSupabase() {
       // If user doesn't exist, create it
       if (!existingUser) {
         console.log("👤 Creating user record for:", user.email);
-        const { error: insertError } = await supabase.from("users").insert({
+        const { error: insertError } = await (supabase.from("users") as any).insert({
           id: user.id,
           email: user.email || "",
           name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "User",
@@ -279,13 +279,13 @@ export function useSupabase() {
       console.log("💾 Saving playlist to Supabase:", playlist.name, playlist.id);
 
       // Create or update playlist
-      const { data: playlistData, error: playlistError } = await supabase
-        .from("playlists")
+      const { data: playlistData, error: playlistError } = await (supabase
+        .from("playlists") as any)
         .upsert({
           id: playlist.id,
           user_id: user.id,
           name: playlist.name,
-        } as any, {
+        }, {
           onConflict: 'id'
         })
         .select()
@@ -302,7 +302,7 @@ export function useSupabase() {
       if (playlist.tracks.length > 0) {
         const tracksToInsert = playlist.tracks.map((track) => ({
           id: track.id,
-          playlist_id: playlistData.id,
+          playlist_id: (playlistData as any).id,
           youtube_video_id: track.youtubeVideoId,
           title: track.title,
           thumbnail: track.thumbnail,
@@ -318,9 +318,9 @@ export function useSupabase() {
           .eq("playlist_id", playlistData.id);
 
         // Insert new tracks
-        const { error: tracksError } = await supabase
-          .from("tracks")
-          .insert(tracksToInsert as any);
+        const { error: tracksError } = await (supabase
+          .from("tracks") as any)
+          .insert(tracksToInsert);
 
         if (tracksError) throw tracksError;
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PasteLinkInput } from "@/components/music/PasteLinkInput";
 import { MusicCard } from "@/components/music/MusicCard";
 import { MiniPlayer } from "@/components/music/MiniPlayer";
@@ -26,7 +26,8 @@ export default function Home() {
   const [isDeletePlaylistOpen, setIsDeletePlaylistOpen] = useState(false);
   const [playlistToEdit, setPlaylistToEdit] = useState<{ id: string; name: string } | null>(null);
   const [playlistToDelete, setPlaylistToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [showAllPlaylists, setShowAllPlaylists] = useState(false);
+  const [showAllTracks, setShowAllTracks] = useState(false);
+
 
   // Check for OAuth error in URL
   useEffect(() => {
@@ -74,7 +75,13 @@ export default function Home() {
     deletePlaylist,
   } = usePlaylist();
 
-  // Reset showAllPlaylists to false when component mounts or playlists are first loaded
+
+  // Calculate tracks to display in current playlist
+  const tracksToDisplay = useMemo(() => {
+    if (!currentPlaylist?.tracks || !Array.isArray(currentPlaylist.tracks)) return [];
+    const count = showAllTracks ? currentPlaylist.tracks.length : Math.min(4, currentPlaylist.tracks.length);
+    return currentPlaylist.tracks.slice(0, count);
+  }, [currentPlaylist?.tracks, showAllTracks]);
 
   const handleCreatePlaylist = async (name: string) => {
     const newPlaylist = await createPlaylist(name);
@@ -108,11 +115,6 @@ export default function Home() {
     }
   };
 
-  // Debug: Log currentPlaylist in page component
-  useEffect(() => {
-    console.log("📄 Page - currentPlaylist:", currentPlaylist?.id, currentPlaylist?.name);
-    console.log("📄 Page - playlists count:", playlists.length);
-  }, [currentPlaylist, playlists]);
 
   // AuthStatus component handles user state internally
 
@@ -154,9 +156,7 @@ export default function Home() {
     const index = playlist.findIndex((t) => t.id === track.id);
     if (index === -1) {
       addToPlaylist(track);
-      console.log("✅ Đã thêm vào hàng đợi:", track.title);
     } else {
-      console.log("⚠️ Bài hát đã có trong hàng đợi");
     }
   };
 
@@ -182,7 +182,6 @@ export default function Home() {
           };
         });
         
-        console.log("✅ Đã thêm bài hát vào playlist:", track.title);
       } else {
         // Create a default playlist if none exists
         const newPlaylist = await createPlaylist("My Playlist");
@@ -201,7 +200,6 @@ export default function Home() {
             };
           });
           
-          console.log("✅ Đã tạo playlist mới và thêm bài hát:", track.title);
         }
       }
     } catch (error) {
@@ -294,7 +292,7 @@ export default function Home() {
             {playlists.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {(showAllPlaylists ? playlists : playlists.slice(0, 4)).map((pl) => (
+                  {playlists.map((pl) => (
                       <div
                         key={pl.id}
                         className={`group relative p-4 rounded-lg border transition-all cursor-pointer ${
@@ -303,7 +301,6 @@ export default function Home() {
                             : "bg-card hover:bg-accent border-border"
                         }`}
                         onClick={() => {
-                          console.log("🔄 Switching to playlist:", pl.id, pl.name);
                           setCurrentPlaylist(pl);
                         }}
                       >
@@ -330,25 +327,6 @@ export default function Home() {
                       </div>
                     ))}
                 </div>
-                {playlists.length > 4 && (
-                  <div className="flex justify-center mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAllPlaylists(!showAllPlaylists)}
-                      className="gap-2"
-                    >
-                      {showAllPlaylists ? (
-                        <>
-                          <span>Thu gọn</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Xem thêm ({playlists.length - 4} playlist)</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
               </>
             ) : (
               <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
@@ -367,16 +345,33 @@ export default function Home() {
               <div className="lg:col-span-2">
                 <h2 className="text-xl font-semibold mb-6">Playlist của bạn</h2>
                 {currentPlaylist.tracks && currentPlaylist.tracks.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {currentPlaylist.tracks.map((track) => (
-                      <MusicCard
-                        key={track.id}
-                        track={track}
-                        onPlay={handlePlay}
-                        onAddToQueue={handleAddToQueue}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {tracksToDisplay.map((track) => (
+                        <MusicCard
+                          key={track.id}
+                          track={track}
+                          onPlay={handlePlay}
+                          onAddToQueue={handleAddToQueue}
+                        />
+                      ))}
+                    </div>
+                    {currentPlaylist.tracks.length > 4 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllTracks(!showAllTracks)}
+                          className="gap-2"
+                        >
+                          {showAllTracks ? (
+                            <span>Thu gọn</span>
+                          ) : (
+                            <span>Xem thêm ({currentPlaylist.tracks.length - 4} bài hát)</span>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-lg">
                     <p>Chưa có bài hát nào trong playlist</p>

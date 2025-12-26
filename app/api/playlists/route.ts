@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(playlists);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching playlists:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch playlists" },
+      { error: error instanceof Error ? error.message : "Failed to fetch playlists" },
       { status: 500 }
     );
   }
@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: playlist, error } = await supabase
-      .from("playlists")
+    const { data: playlist, error } = await (supabase
+      .from("playlists"))
       .insert({
         name,
         user_id: userId,
@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(playlist);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating playlist:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create playlist" },
+      { error: error instanceof Error ? error.message : "Failed to create playlist" },
       { status: 500 }
     );
   }

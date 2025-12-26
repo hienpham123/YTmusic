@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: track, error } = await supabase
-      .from("tracks")
+    const { data: track, error } = await (supabase
+      .from("tracks") as any)
       .insert({
         playlist_id: playlistId,
         youtube_video_id: youtubeVideoId,
@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(track);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error adding track:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to add track" },
+      { error: error instanceof Error ? error.message : "Failed to add track" },
       { status: 500 }
     );
   }

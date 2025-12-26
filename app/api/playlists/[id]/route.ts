@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
-
+//@typescript-eslint.io/rules/no-explicit-any
 // GET /api/playlists/[id] - Get a specific playlist
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { data: playlist, error } = await supabase
       .from("playlists")
       .select(`
         *,
         tracks (*)
       `)
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (error) {
@@ -28,10 +29,10 @@ export async function GET(
     }
 
     return NextResponse.json(playlist);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching playlist:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch playlist" },
+      { error: error instanceof Error ? error.message : "Failed to fetch playlist" },
       { status: 500 }
     );
   }
@@ -40,9 +41,10 @@ export async function GET(
 // PUT /api/playlists/[id] - Update a playlist
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name } = body;
 
@@ -53,10 +55,10 @@ export async function PUT(
       );
     }
 
-    const { data: playlist, error } = await supabase
-      .from("playlists")
+    const { data: playlist, error } = await (supabase
+      .from("playlists") as any)
       .update({ name })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -65,10 +67,10 @@ export async function PUT(
     }
 
     return NextResponse.json(playlist);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating playlist:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update playlist" },
+      { error: error instanceof Error ? error.message : "Failed to update playlist" },
       { status: 500 }
     );
   }
@@ -77,23 +79,24 @@ export async function PUT(
 // DELETE /api/playlists/[id] - Delete a playlist
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { error } = await supabase
       .from("playlists")
       .delete()
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (error) {
       throw error;
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting playlist:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete playlist" },
+      { error: error instanceof Error ? error.message : "Failed to delete playlist" },
       { status: 500 }
     );
   }
