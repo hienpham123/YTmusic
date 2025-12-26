@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: track, error } = await (supabase
-      .from("tracks") as any)
+    const { data: track, error } = await supabase
+      .from("tracks")
+      // @ts-expect-error - Supabase types are not fully generated for this table
       .insert({
         playlist_id: playlistId,
         youtube_video_id: youtubeVideoId,

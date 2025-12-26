@@ -55,9 +55,11 @@ export async function PUT(
       );
     }
 
-    const { data: playlist, error } = await (supabase
-      .from("playlists") as any)
-      .update({ name })
+    const updateData = { name };
+    const { data: playlist, error } = await supabase
+      .from("playlists")
+      // @ts-expect-error - Supabase types are not fully generated for this table
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
