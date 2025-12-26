@@ -168,6 +168,36 @@ export function useSupabase() {
     }
   }, []);
 
+  // Sign in with Google
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      console.log("🔐 Attempting to sign in with Google...");
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        console.error("❌ Google sign in error:", error);
+        throw error;
+      }
+      
+      console.log("✅ Google OAuth initiated");
+      return data;
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      console.error("❌ Google sign in failed:", err);
+      
+      if (err.message?.includes("placeholder") || err.message?.includes("Failed to fetch")) {
+        throw new Error("Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local");
+      }
+      
+      throw new Error(err.message || "Không thể đăng nhập với Google. Vui lòng thử lại.");
+    }
+  }, []);
+
   // Sign out
   const signOut = useCallback(async () => {
     try {
@@ -404,6 +434,7 @@ export function useSupabase() {
     signIn,
     signUp,
     signInWithGitHub,
+    signInWithGoogle,
     signOut,
     loadPlaylists,
     savePlaylist,

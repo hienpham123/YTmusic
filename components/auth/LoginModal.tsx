@@ -5,7 +5,7 @@ import { useSupabase } from "@/hooks/useSupabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { X, Loader2, Github } from "lucide-react";
+import { X, Loader2, Github, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface LoginModalProps {
@@ -21,7 +21,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { signIn, signUp, signInWithGitHub } = useSupabase();
+  const { signIn, signUp, signInWithGitHub, signInWithGoogle } = useSupabase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,28 +167,54 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </div>
             </div>
 
-            {/* GitHub OAuth Button */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                setError(null);
-                setLoading(true);
-                try {
-                  await signInWithGitHub();
-                  // OAuth will redirect, so we don't need to close modal here
-                } catch (err) {
-                  const error = err as { message?: string };
-                  setError(error.message || "Không thể đăng nhập với GitHub");
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-            >
-              <Github className="mr-2 h-4 w-4" />
-              Đăng nhập với GitHub
-            </Button>
+            {/* OAuth Buttons */}
+            <div className="space-y-3">
+              {/* GitHub OAuth Button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  setError(null);
+                  setLoading(true);
+                  try {
+                    await signInWithGitHub();
+                    // OAuth will redirect, so we don't need to close modal here
+                  } catch (err) {
+                    const error = err as { message?: string };
+                    setError(error.message || "Không thể đăng nhập với GitHub");
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+              >
+                <Github className="mr-2 h-4 w-4" />
+                Đăng nhập với GitHub
+              </Button>
+
+              {/* Google OAuth Button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  setError(null);
+                  setLoading(true);
+                  try {
+                    await signInWithGoogle();
+                    // OAuth will redirect, so we don't need to close modal here
+                  } catch (err) {
+                    const error = err as { message?: string };
+                    setError(error.message || "Không thể đăng nhập với Google");
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Đăng nhập với Gmail
+              </Button>
+            </div>
 
             <div className="mt-4 text-center">
               <button
