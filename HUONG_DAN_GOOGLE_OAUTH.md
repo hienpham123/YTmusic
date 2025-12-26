@@ -9,14 +9,14 @@
 5. Nếu chưa có, bạn sẽ cần cấu hình **OAuth consent screen** trước:
    - Chọn **User Type** (External cho development, Internal cho Google Workspace)
    - Điền thông tin app:
-     - **App name**: `Paste & Play` (hoặc tên bạn muốn)
+     - **App name**: `YT Music Hub` (hoặc tên bạn muốn)
      - **User support email**: Email của bạn
      - **Developer contact information**: Email của bạn
    - Click **"Save and Continue"** (có thể bỏ qua scopes và test users)
 6. Quay lại **Credentials** > **"+ CREATE CREDENTIALS"** > **"OAuth client ID"**
 7. Chọn **Application type**: **Web application**
 8. Điền thông tin:
-   - **Name**: `Paste & Play` (hoặc tên bạn muốn)
+   - **Name**: `YT Music Hub` (hoặc tên bạn muốn)
    - **Authorized JavaScript origins**: 
      - `http://localhost:3000` (cho development)
      - `https://your-domain.com` (cho production, nếu có)

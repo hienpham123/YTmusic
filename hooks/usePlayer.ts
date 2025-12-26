@@ -8,7 +8,9 @@ type RepeatMode = "off" | "one" | "all";
 export function usePlayer() {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [playlist, setPlaylist] = useState<Track[]>([]); // Queue
+  const [sourcePlaylist, setSourcePlaylist] = useState<Track[]>([]); // Playlist containing current track
+  const [sourceIndex, setSourceIndex] = useState<number>(-1); // Index in source playlist
   const [originalPlaylist, setOriginalPlaylist] = useState<Track[]>([]); // For shuffle
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [currentTime, setCurrentTime] = useState(0);
@@ -18,10 +20,59 @@ export function usePlayer() {
   const playerRef = useRef<YT.Player | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadPlayer = useCallback((videoId: string) => {
-    if (playerRef.current) {
-      playerRef.current.loadVideoById(videoId);
-    }
+  const loadPlayer = useCallback((videoId: string, onReady?: () => void) => {
+    if (!playerRef.current) return;
+
+    // Load the video
+    playerRef.current.loadVideoById(videoId);
+    
+    // Give the video time to load before trying to play
+    // Check player state after a short delay
+    setTimeout(() => {
+      if (!playerRef.current) return;
+
+      // Try to check if video is ready, if not, try anyway after a bit more time
+      const tryPlay = () => {
+        if (!playerRef.current) return;
+        
+        try {
+          const state = playerRef.current.getPlayerState();
+          // CUED (5), PAUSED (2), or PLAYING (1) means video is ready
+          if (state === 5 || state === 2 || state === 1 || state === 3) {
+            if (onReady) {
+              onReady();
+            } else {
+              playerRef.current.playVideo();
+              setIsPlaying(true);
+            }
+          } else {
+            // If not ready yet, try again after a short delay
+            setTimeout(() => {
+              if (playerRef.current) {
+                if (onReady) {
+                  onReady();
+                } else {
+                  playerRef.current.playVideo();
+                  setIsPlaying(true);
+                }
+              }
+            }, 300);
+          }
+        } catch (error) {
+          // On error, just try to play anyway
+          if (onReady) {
+            onReady();
+          } else {
+            if (playerRef.current) {
+              playerRef.current.playVideo();
+              setIsPlaying(true);
+            }
+          }
+        }
+      };
+
+      tryPlay();
+    }, 100); // Initial delay of 100ms
   }, []);
 
   const play = useCallback(() => {
@@ -54,27 +105,40 @@ export function usePlayer() {
           return newPlaylist;
         });
       }
-      loadPlayer(track.youtubeVideoId);
-      play();
+      loadPlayer(track.youtubeVideoId, () => {
+        play();
+      });
     },
     [loadPlayer, play, playlist]
   );
 
   // Play track without adding to queue
+  // Accepts optional sourcePlaylist to know which playlist this track belongs to
   const playTrackOnly = useCallback(
-    (track: Track) => {
+    (track: Track, sourcePlaylistTracks?: Track[]) => {
       setCurrentTrack(track);
-      // Just play, don't add to queue or set index
-      // If track is already in queue, find its index
-      const index = playlist.findIndex((t) => t.id === track.id);
-      if (index !== -1) {
-        setCurrentIndex(index);
+      
+      // If track is already in queue, prioritize queue
+      const queueIndex = playlist.findIndex((t) => t.id === track.id);
+      if (queueIndex !== -1) {
+        setCurrentIndex(queueIndex);
+        setSourcePlaylist([]);
+        setSourceIndex(-1);
       } else {
-        // Not in queue, set index to -1 to indicate it's not part of queue
+        // Not in queue, use source playlist if provided
         setCurrentIndex(-1);
+        if (sourcePlaylistTracks && sourcePlaylistTracks.length > 0) {
+          const srcIndex = sourcePlaylistTracks.findIndex((t) => t.id === track.id);
+          setSourcePlaylist(sourcePlaylistTracks);
+          setSourceIndex(srcIndex !== -1 ? srcIndex : -1);
+        } else {
+          setSourcePlaylist([]);
+          setSourceIndex(-1);
+        }
       }
-      loadPlayer(track.youtubeVideoId);
-      play();
+      loadPlayer(track.youtubeVideoId, () => {
+        play();
+      });
     },
     [loadPlayer, play, playlist]
   );
@@ -126,8 +190,6 @@ export function usePlayer() {
   }, []);
 
   const next = useCallback(() => {
-    if (playlist.length === 0) return;
-    
     if (repeatMode === "one") {
       // Repeat current track
       if (currentTrack) {
@@ -136,31 +198,76 @@ export function usePlayer() {
       return;
     }
 
-    if (currentIndex < playlist.length - 1) {
+    // Priority 1: If there are tracks in queue, play from queue
+    if (playlist.length > 0 && currentIndex >= 0 && currentIndex < playlist.length - 1) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       playTrack(playlist[nextIndex]);
-    } else if (repeatMode === "all") {
-      // Loop back to start
-      setCurrentIndex(0);
-      playTrack(playlist[0]);
+      return;
     }
-  }, [playlist, currentIndex, currentTrack, repeatMode, playTrack]);
+
+    // If queue is finished or empty, check source playlist
+    if (sourcePlaylist.length > 0 && sourceIndex >= 0 && sourceIndex < sourcePlaylist.length - 1) {
+      const nextIndex = sourceIndex + 1;
+      setSourceIndex(nextIndex);
+      playTrackOnly(sourcePlaylist[nextIndex], sourcePlaylist);
+      return;
+    }
+
+    // Handle repeat mode
+    if (repeatMode === "all") {
+      if (playlist.length > 0) {
+        // Loop back to start of queue
+        setCurrentIndex(0);
+        playTrack(playlist[0]);
+      } else if (sourcePlaylist.length > 0) {
+        // Loop back to start of source playlist
+        setSourceIndex(0);
+        playTrackOnly(sourcePlaylist[0], sourcePlaylist);
+      }
+    }
+  }, [playlist, currentIndex, sourcePlaylist, sourceIndex, currentTrack, repeatMode, playTrack, playTrackOnly]);
 
   const previous = useCallback(() => {
-    if (playlist.length === 0) return;
-    
-    if (currentIndex > 0) {
+    if (repeatMode === "one") {
+      // Repeat current track
+      if (currentTrack) {
+        playTrack(currentTrack);
+      }
+      return;
+    }
+
+    // Priority 1: If playing from queue and not at start, go to previous in queue
+    if (playlist.length > 0 && currentIndex > 0) {
       const prevIndex = currentIndex - 1;
       setCurrentIndex(prevIndex);
       playTrack(playlist[prevIndex]);
-    } else if (repeatMode === "all") {
-      // Loop to end
-      const lastIndex = playlist.length - 1;
-      setCurrentIndex(lastIndex);
-      playTrack(playlist[lastIndex]);
+      return;
     }
-  }, [playlist, currentIndex, repeatMode, playTrack]);
+
+    // If at start of queue or not in queue, check source playlist
+    if (sourcePlaylist.length > 0 && sourceIndex > 0) {
+      const prevIndex = sourceIndex - 1;
+      setSourceIndex(prevIndex);
+      playTrackOnly(sourcePlaylist[prevIndex], sourcePlaylist);
+      return;
+    }
+
+    // Handle repeat mode
+    if (repeatMode === "all") {
+      if (playlist.length > 0) {
+        // Loop to end of queue
+        const lastIndex = playlist.length - 1;
+        setCurrentIndex(lastIndex);
+        playTrack(playlist[lastIndex]);
+      } else if (sourcePlaylist.length > 0) {
+        // Loop to end of source playlist
+        const lastIndex = sourcePlaylist.length - 1;
+        setSourceIndex(lastIndex);
+        playTrackOnly(sourcePlaylist[lastIndex], sourcePlaylist);
+      }
+    }
+  }, [playlist, currentIndex, sourcePlaylist, sourceIndex, currentTrack, repeatMode, playTrack, playTrackOnly]);
 
   const addToPlaylist = useCallback((track: Track) => {
     setPlaylist((prev) => {
@@ -192,53 +299,79 @@ export function usePlayer() {
       return;
     }
 
-    // Auto next when video ends
-    setPlaylist((prev) => {
-      setCurrentIndex((idx) => {
-        if (prev.length > 0 && idx < prev.length - 1) {
-          const nextIndex = idx + 1;
-          const nextTrack = prev[nextIndex];
-          if (nextTrack && playerRef.current) {
-            // Update track and index
-            setCurrentTrack(nextTrack);
-            setCurrentIndex(nextIndex);
-            
-            // Load next video (will start from beginning)
-            playerRef.current.loadVideoById(nextTrack.youtubeVideoId, 0);
-            
-            // Auto play after video loads
-            setTimeout(() => {
-              if (playerRef.current) {
-                playerRef.current.playVideo();
-                setIsPlaying(true);
-              }
-            }, 500);
+    // Priority 1: Check queue first
+    if (playlist.length > 0 && currentIndex >= 0 && currentIndex < playlist.length - 1) {
+      const nextIndex = currentIndex + 1;
+      const nextTrack = playlist[nextIndex];
+      if (nextTrack && playerRef.current) {
+        setCurrentTrack(nextTrack);
+        setCurrentIndex(nextIndex);
+        playerRef.current.loadVideoById(nextTrack.youtubeVideoId, 0);
+        setTimeout(() => {
+          if (playerRef.current) {
+            playerRef.current.playVideo();
+            setIsPlaying(true);
           }
-          return nextIndex;
-        } else if (repeatMode === "all") {
-          // Loop back to start
-          const firstTrack = prev[0];
-          if (firstTrack && playerRef.current) {
-            setCurrentTrack(firstTrack);
-            setCurrentIndex(0);
-            playerRef.current.loadVideoById(firstTrack.youtubeVideoId, 0);
-            setTimeout(() => {
-              if (playerRef.current) {
-                playerRef.current.playVideo();
-                setIsPlaying(true);
-              }
-            }, 500);
+        }, 500);
+      }
+      return;
+    }
+
+    // Priority 2: If queue is finished or empty, check source playlist
+    if (sourcePlaylist.length > 0 && sourceIndex >= 0 && sourceIndex < sourcePlaylist.length - 1) {
+      const nextIndex = sourceIndex + 1;
+      const nextTrack = sourcePlaylist[nextIndex];
+      if (nextTrack && playerRef.current) {
+        setCurrentTrack(nextTrack);
+        setSourceIndex(nextIndex);
+        playerRef.current.loadVideoById(nextTrack.youtubeVideoId, 0);
+        setTimeout(() => {
+          if (playerRef.current) {
+            playerRef.current.playVideo();
+            setIsPlaying(true);
           }
-          return 0;
-        } else {
-          // No more tracks, stop playing
-          setIsPlaying(false);
+        }, 500);
+      }
+      return;
+    }
+
+    // Handle repeat mode
+    if (repeatMode === "all") {
+      if (playlist.length > 0 && playerRef.current) {
+        // Loop back to start of queue
+        const firstTrack = playlist[0];
+        if (firstTrack) {
+          setCurrentTrack(firstTrack);
+          setCurrentIndex(0);
+          playerRef.current.loadVideoById(firstTrack.youtubeVideoId, 0);
+          setTimeout(() => {
+            if (playerRef.current) {
+              playerRef.current.playVideo();
+              setIsPlaying(true);
+            }
+          }, 500);
         }
-        return idx;
-      });
-      return prev;
-    });
-  }, [repeatMode, currentTrack]);
+      } else if (sourcePlaylist.length > 0 && playerRef.current) {
+        // Loop back to start of source playlist
+        const firstTrack = sourcePlaylist[0];
+        if (firstTrack) {
+          setCurrentTrack(firstTrack);
+          setSourceIndex(0);
+          playerRef.current.loadVideoById(firstTrack.youtubeVideoId, 0);
+          setTimeout(() => {
+            if (playerRef.current) {
+              playerRef.current.playVideo();
+              setIsPlaying(true);
+            }
+          }, 500);
+        }
+      }
+      return;
+    }
+
+    // No more tracks, stop playing
+    setIsPlaying(false);
+  }, [repeatMode, currentTrack, playlist, currentIndex, sourcePlaylist, sourceIndex]);
 
   const setPlayer = useCallback((player: YT.Player) => {
     playerRef.current = player;

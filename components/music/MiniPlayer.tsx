@@ -57,6 +57,11 @@ export function MiniPlayer({
 }: MiniPlayerProps) {
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
+  
+  // Touch gestures for swipe left/right
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const swipeThreshold = 50; // Minimum distance for swipe
 
   // Update seek value when currentTime changes (if not seeking)
   useEffect(() => {
@@ -89,6 +94,41 @@ export function MiniPlayer({
     const value = parseFloat(target.value);
     onSeek(value);
     setIsSeeking(false);
+  };
+
+  // Handle touch start for swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  // Handle touch end for swipe gestures
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartX.current || !touchStartY.current) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+
+    // Only process swipe if horizontal movement is greater than vertical (more horizontal swipe)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+      if (deltaX > 0) {
+        // Swipe right - previous track
+        if (hasPrevious || repeatMode !== "off") {
+          onPrevious();
+        }
+      } else {
+        // Swipe left - next track
+        if (hasNext || repeatMode !== "off") {
+          onNext();
+        }
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
   };
   const playerRef = useRef<HTMLDivElement>(null);
   const ytPlayerRef = useRef<YT.Player | null>(null);
@@ -170,7 +210,9 @@ export function MiniPlayer({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md touch-none"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="hidden">
           <div ref={playerRef} />
@@ -202,8 +244,8 @@ export function MiniPlayer({
             />
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 overflow-hidden rounded-md">
               <Image
                 src={track.thumbnail}
                 alt={track.title}
@@ -213,23 +255,23 @@ export function MiniPlayer({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="truncate font-medium">{track.title}</h4>
+              <h4 className="truncate font-medium text-sm sm:text-base">{track.title}</h4>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{formatTime(seekValue)}</span>
                 <span>/</span>
                 <span>{formatTime(duration)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               {onToggleShuffle && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onToggleShuffle}
-                  className={`h-9 w-9 ${isShuffled ? "text-primary" : ""}`}
+                  className={`h-8 w-8 sm:h-9 sm:w-9 ${isShuffled ? "text-primary" : ""}`}
                   title="Shuffle"
                 >
-                  <Shuffle className="h-4 w-4" />
+                  <Shuffle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               )}
               <Button
@@ -237,22 +279,22 @@ export function MiniPlayer({
                 size="icon"
                 onClick={onPrevious}
                 disabled={!hasPrevious && repeatMode === "off"}
-                className="h-9 w-9"
+                className="h-8 w-8 sm:h-9 sm:w-9"
                 title="Previous"
               >
-                <SkipBack className="h-4 w-4" />
+                <SkipBack className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
               <Button
                 variant="default"
                 size="icon"
-                className="h-10 w-10 rounded-full"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full"
                 onClick={isPlaying ? onPause : onPlay}
                 title={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? (
-                  <Pause className="h-5 w-5 fill-current" />
+                  <Pause className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                 ) : (
-                  <Play className="h-5 w-5 fill-current" />
+                  <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                 )}
               </Button>
               <Button
@@ -260,17 +302,17 @@ export function MiniPlayer({
                 size="icon"
                 onClick={onNext}
                 disabled={!hasNext && repeatMode === "off"}
-                className="h-9 w-9"
+                className="h-8 w-8 sm:h-9 sm:w-9"
                 title="Next"
               >
-                <SkipForward className="h-4 w-4" />
+                <SkipForward className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
               {onToggleRepeat && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onToggleRepeat}
-                  className={`h-9 w-9 ${repeatMode !== "off" ? "text-primary" : ""}`}
+                  className={`h-8 w-8 sm:h-9 sm:w-9 ${repeatMode !== "off" ? "text-primary" : ""}`}
                   title={
                     repeatMode === "one"
                       ? "Repeat one"
@@ -280,9 +322,9 @@ export function MiniPlayer({
                   }
                 >
                   {repeatMode === "one" ? (
-                    <Repeat1 className="h-4 w-4" />
+                    <Repeat1 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   ) : (
-                    <Repeat className="h-4 w-4" />
+                    <Repeat className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   )}
                 </Button>
               )}

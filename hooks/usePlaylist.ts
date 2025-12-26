@@ -20,6 +20,31 @@ export function usePlaylist() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
 
+  // Refetch playlists function for pull to refresh
+  const refetchPlaylists = useCallback(async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const loadedPlaylists = await loadPlaylists();
+      setPlaylists(loadedPlaylists);
+      if (loadedPlaylists.length > 0) {
+        setCurrentPlaylist((prev) => {
+          if (!prev) {
+            return loadedPlaylists[0];
+          } else {
+            const updatedCurrent = loadedPlaylists.find(p => p.id === prev.id);
+            return updatedCurrent || loadedPlaylists[0];
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error refetching playlists:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, loadPlaylists]);
+
   // Reset hasLoaded when user changes
   useEffect(() => {
     setHasLoaded(false);
@@ -296,26 +321,40 @@ export function usePlaylist() {
 
   const removeTrackFromPlaylist = useCallback(
     async (playlistId: string, trackId: string) => {
+      // Update local state immediately for instant UI feedback
       setPlaylists((prev) =>
         prev.map((p) => {
           if (p.id === playlistId) {
-            const updated = {
+            return {
               ...p,
               tracks: p.tracks.filter((t) => t.id !== trackId),
             };
-
-            // Remove from Supabase if user is logged in
-            if (user) {
-              removeTrackFromSupabase(playlistId, trackId).catch((error) => {
-                console.error("Error removing track from Supabase:", error);
-              });
-            }
-
-            return updated;
           }
           return p;
         })
       );
+
+      // Also update currentPlaylist if it matches
+      setCurrentPlaylist((prev) => {
+        if (prev?.id === playlistId) {
+          return {
+            ...prev,
+            tracks: prev.tracks.filter((t) => t.id !== trackId),
+          };
+        }
+        return prev;
+      });
+
+      // Remove from Supabase if user is logged in
+      if (user) {
+        try {
+          await removeTrackFromSupabase(playlistId, trackId);
+        } catch (error) {
+          console.error("Error removing track from Supabase:", error);
+          // If Supabase fails, we could optionally revert the UI change here
+          // For now, we'll keep the optimistic update
+        }
+      }
     },
     [user, removeTrackFromSupabase]
   );
@@ -330,6 +369,7 @@ export function usePlaylist() {
     addTrackToPlaylist,
     removeTrackFromPlaylist,
     isLoading,
+    refetchPlaylists,
   };
 }
 

@@ -6,7 +6,7 @@
 2. Đăng ký/Đăng nhập tài khoản
 3. Click **"New Project"**
 4. Điền thông tin:
-   - **Name**: paste-and-play (hoặc tên bạn muốn)
+   - **Name**: yt-music-hub (hoặc tên bạn muốn)
    - **Database Password**: Tạo password mạnh (lưu lại!)
    - **Region**: Chọn region gần bạn nhất
 5. Click **"Create new project"** và đợi project được tạo (2-3 phút)

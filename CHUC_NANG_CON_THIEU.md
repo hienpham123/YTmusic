@@ -7,19 +7,19 @@ Tài liệu này liệt kê tất cả các chức năng còn thiếu trong ứn
 ## 🔍 1. Tìm Kiếm (Search)
 
 ### 1.1. Tìm kiếm cơ bản
-- [ ] Tìm kiếm bài hát trong playlist hiện tại
-- [ ] Tìm kiếm playlist theo tên
-- [ ] Tìm kiếm toàn bộ bài hát trong tất cả playlist
-- [ ] Tìm kiếm theo tên kênh (channel)
-- [ ] Tìm kiếm theo mood/genre
+- [x] Tìm kiếm bài hát trong playlist hiện tại
+- [x] Tìm kiếm playlist theo tên
+- [x] Tìm kiếm toàn bộ bài hát trong tất cả playlist
+- [x] Tìm kiếm theo tên kênh (channel)
+- [x] Tìm kiếm theo mood/genre
 
 ### 1.2. Tìm kiếm YouTube
-- [ ] Tìm kiếm video YouTube trực tiếp trong app
-- [ ] Tìm kiếm theo từ khóa
-- [ ] Tìm kiếm theo kênh
-- [ ] Tìm kiếm theo playlist YouTube
-- [ ] Gợi ý tìm kiếm (autocomplete)
-- [ ] Lịch sử tìm kiếm
+- [x] Tìm kiếm video YouTube trực tiếp trong app
+- [x] Tìm kiếm theo từ khóa
+- [ ] Tìm kiếm theo kênh (cần thêm filter trong search)
+- [ ] Tìm kiếm theo playlist YouTube (cần thêm endpoint riêng)
+- [x] Gợi ý tìm kiếm (autocomplete từ lịch sử)
+- [x] Lịch sử tìm kiếm
 
 ---
 
@@ -240,10 +240,10 @@ Tài liệu này liệt kê tất cả các chức năng còn thiếu trong ứn
 - [ ] Recent playlists sidebar
 
 ### 10.4. Responsive
-- [ ] Tối ưu cho mobile
-- [ ] Touch gestures (swipe để next/previous)
-- [ ] Pull to refresh
-- [ ] Bottom sheet cho mobile
+- [x] Tối ưu cho mobile
+- [x] Touch gestures (swipe để next/previous)
+- [x] Pull to refresh
+- [x] Bottom sheet cho mobile
 
 ### 10.5. Accessibility
 - [ ] Screen reader support
@@ -330,7 +330,7 @@ Tài liệu này liệt kê tất cả các chức năng còn thiếu trong ứn
 ## 🎯 Ưu Tiên Triển Khai
 
 ### Priority 1 (Quan trọng nhất)
-1. ✅ Tìm kiếm bài hát trong playlist
+1. ✅ Tìm kiếm bài hát trong playlist (Đã hoàn thành)
 2. ✅ Điều chỉnh âm lượng
 3. ✅ Yêu thích bài hát
 4. ✅ Sắp xếp lại thứ tự trong playlist (drag & drop)

@@ -1,10 +1,10 @@
-# 🎧 Paste & Play – Notion for Music
+# 🎧 YT Music Hub – Notion for Music
 
-Một website nghe nhạc **chỉ cần dán link YouTube là nghe được**. Không download, không lách luật, tập trung vào **trải nghiệm lưu trữ – sắp xếp – nghe nhạc như Notion**.
+Một website nghe nhạc **tìm kiếm và phát nhạc từ YouTube**. Không download, không lách luật, tập trung vào **trải nghiệm lưu trữ – sắp xếp – nghe nhạc như Notion**.
 
 ## ✨ Tính năng
 
-- 🎵 **Paste & Play**: Dán link YouTube, nghe nhạc ngay
+- 🎵 **Tìm kiếm YouTube**: Tìm kiếm và phát nhạc trực tiếp từ YouTube
 - 🎨 **Metadata tự động**: Tự động lấy title, thumbnail, duration từ YouTube
 - 🎭 **Mood Detection**: Tự động gợi ý mood (Chill, Sad, Night, Focus)
 - 📝 **Playlist cá nhân**: Tạo và quản lý playlist của riêng bạn
@@ -84,7 +84,7 @@ src/
 
 ## 📝 Sử dụng
 
-1. **Dán link YouTube**: Copy link YouTube và dán vào input trung tâm
+1. **Tìm kiếm YouTube**: Gõ từ khóa vào ô tìm kiếm để tìm video YouTube
 2. **Nghe ngay**: Click "Phát" để nghe ngay
 3. **Thêm vào playlist**: Click nút "+" để thêm vào playlist
 4. **Quản lý playlist**: Xem danh sách phát ở sidebar, click để phát

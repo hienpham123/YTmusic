@@ -9,7 +9,7 @@
 
 1. Ở góc trên cùng bên trái, click vào dropdown project
 2. Click **"New Project"** để tạo project mới (hoặc chọn project có sẵn)
-3. Đặt tên project (ví dụ: "Paste & Play")
+3. Đặt tên project (ví dụ: "YT Music Hub")
 4. Click **"Create"**
 
 ## Bước 3: Kích hoạt YouTube Data API v3

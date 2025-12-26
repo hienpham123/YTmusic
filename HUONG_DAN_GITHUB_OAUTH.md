@@ -5,7 +5,7 @@
 1. Vào https://github.com/settings/developers
 2. Click **"New OAuth App"** (hoặc **"OAuth Apps"** > **"New OAuth App"**)
 3. Điền thông tin:
-   - **Application name**: `Paste & Play` (hoặc tên bạn muốn)
+   - **Application name**: `YT Music Hub` (hoặc tên bạn muốn)
    - **Homepage URL**: `http://localhost:3000` (cho development)
    - **Authorization callback URL**: `https://xlajiamfriypsmrgkpze.supabase.co/auth/v1/callback`
      - ⚠️ **Quan trọng**: Thay `xlajiamfriypsmrgkpze` bằng project ID của bạn từ Supabase URL

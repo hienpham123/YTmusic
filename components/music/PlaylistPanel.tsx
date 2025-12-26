@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Playlist } from "@/types/playlist";
 import { Track } from "@/types/track";
 import { Card } from "@/components/ui/card";
@@ -20,6 +21,7 @@ export function PlaylistPanel({
   onPlayTrack,
   onRemoveTrack,
 }: PlaylistPanelProps) {
+
   if (!playlist) {
     return (
       <div className="p-4 text-center text-muted-foreground">
@@ -41,8 +43,15 @@ export function PlaylistPanel({
 
   return (
     <div className="space-y-2 p-4">
-      <h3 className="font-semibold text-lg mb-4">{playlist.name}</h3>
-      {tracks.map((track, index) => (
+      <div className="mb-4">
+        <h3 className="font-semibold text-lg mb-3">{playlist.name}</h3>
+      </div>
+      {tracks.length === 0 ? (
+        <div className="p-4 text-center text-muted-foreground text-sm">
+          Playlist trống. Thêm bài hát để bắt đầu!
+        </div>
+      ) : (
+        tracks.map((track, index) => (
         <motion.div
           key={track.id}
           initial={{ opacity: 0, x: -20 }}
@@ -93,7 +102,7 @@ export function PlaylistPanel({
             </div>
           </Card>
         </motion.div>
-      ))}
+      )))}
     </div>
   );
 }
