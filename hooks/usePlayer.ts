@@ -269,6 +269,68 @@ export function usePlayer() {
     }
   }, []);
 
+  // Setup Media Session API for background playback on mobile
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) {
+      // Media Session API not supported
+      return;
+    }
+
+    const mediaSession = navigator.mediaSession;
+
+    // Update metadata when track changes
+    if (currentTrack) {
+      mediaSession.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: currentTrack.channelName || "Unknown Artist",
+        artwork: [
+          {
+            src: currentTrack.thumbnail,
+            sizes: "512x512",
+            type: "image/jpeg",
+          },
+        ],
+      });
+    }
+
+    // Set up action handlers
+    mediaSession.setActionHandler("play", () => {
+      play();
+    });
+
+    mediaSession.setActionHandler("pause", () => {
+      pause();
+    });
+
+    mediaSession.setActionHandler("previoustrack", () => {
+      previous();
+    });
+
+    mediaSession.setActionHandler("nexttrack", () => {
+      next();
+    });
+
+    // Update playback state
+    if (isPlaying) {
+      mediaSession.playbackState = "playing";
+    } else {
+      mediaSession.playbackState = "paused";
+    }
+
+    // Update position state
+    if (currentTrack && duration > 0 && isPlaying) {
+      try {
+        mediaSession.setPositionState({
+          duration: duration,
+          playbackRate: 1.0,
+          position: currentTime,
+        });
+      } catch (e) {
+        // Position state might not be supported on all browsers
+      }
+    }
+  }, [currentTrack, isPlaying, currentTime, duration, play, pause, next, previous]);
+
   // Cleanup interval on unmount
   useEffect(() => {
     return () => {
