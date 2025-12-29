@@ -10,10 +10,12 @@ export async function GET(
     const { id } = await params;
     const { data: playlist, error } = await supabase
       .from("playlists")
-      .select(`
+      .select(
+        `
         *,
         tracks (*)
-      `)
+      `
+      )
       .eq("id", id)
       .single();
 
@@ -32,7 +34,10 @@ export async function GET(
   } catch (error: unknown) {
     console.error("Error fetching playlist:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch playlist" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to fetch playlist",
+      },
       { status: 500 }
     );
   }
@@ -49,10 +54,7 @@ export async function PUT(
     const { name } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     const updateData = { name };
@@ -72,7 +74,10 @@ export async function PUT(
   } catch (error: unknown) {
     console.error("Error updating playlist:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update playlist" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to update playlist",
+      },
       { status: 500 }
     );
   }
@@ -85,10 +90,20 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const { error } = await supabase
-      .from("playlists")
+
+    // First, delete all tracks in this playlist
+    const { error: tracksError } = await supabase
+      .from("tracks")
       .delete()
-      .eq("id", id);
+      .eq("playlist_id", id);
+
+    if (tracksError) {
+      console.error("Error deleting tracks:", tracksError);
+      throw tracksError;
+    }
+
+    // Then delete the playlist
+    const { error } = await supabase.from("playlists").delete().eq("id", id);
 
     if (error) {
       throw error;
@@ -98,9 +113,11 @@ export async function DELETE(
   } catch (error: unknown) {
     console.error("Error deleting playlist:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete playlist" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to delete playlist",
+      },
       { status: 500 }
     );
   }
 }
-

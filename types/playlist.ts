@@ -7,4 +7,3 @@ export interface Playlist {
   tracks: Track[];
   createdAt: Date;
 }
-

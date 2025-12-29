@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PlaylistMenuProps {
   onEdit: () => void;
@@ -12,93 +15,49 @@ interface PlaylistMenuProps {
 }
 
 export function PlaylistMenu({ onEdit, onDelete }: PlaylistMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
   return (
-    <div className="relative" ref={menuRef}>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 sm:h-8 sm:w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          title="Tùy chọn"
+        >
+          <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-56 min-w-[200px]"
         onClick={(e) => {
           e.stopPropagation();
-          setIsOpen(!isOpen);
         }}
-        title="Tùy chọn"
       >
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40"
-              onClick={() => setIsOpen(false)}
-            />
-
-            {/* Menu */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-0 top-full mt-1 z-50 min-w-[200px]"
-            >
-              <Card className="p-1 shadow-lg border-border bg-card">
-                <div className="flex flex-col">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 h-10 px-3"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsOpen(false);
-                      onEdit();
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span>Sửa tên playlist</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 h-10 px-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsOpen(false);
-                      onDelete();
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Xóa playlist</span>
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+        <DropdownMenuItem
+          className="cursor-pointer py-3 text-base sm:text-sm touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
+          <Pencil className="h-5 w-5 sm:h-4 sm:w-4 mr-3" />
+          <span>Sửa tên playlist</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer py-3 text-base sm:text-sm touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 className="h-5 w-5 sm:h-4 sm:w-4 mr-3" />
+          <span>Xóa playlist</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
-

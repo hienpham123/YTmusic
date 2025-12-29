@@ -12,7 +12,12 @@ interface BottomSheetProps {
   children: ReactNode;
 }
 
-export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: BottomSheetProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -64,4 +69,3 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
     </AnimatePresence>
   );
 }
-

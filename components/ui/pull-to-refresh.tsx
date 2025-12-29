@@ -37,7 +37,7 @@ export function PullToRefresh({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled || isRefreshing || !canPull) return;
-    
+
     const touch = e.touches[0];
     startY.current = touch.clientY;
     setIsPulling(true);
@@ -146,4 +146,3 @@ export function PullToRefresh({
     </div>
   );
 }
-

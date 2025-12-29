@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { Track } from "@/types/track";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Play, Plus, ListMusic, Trash2, MoreVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Play,
+  Plus,
+  ListMusic,
+  Trash2,
+  MoreVertical,
+  Heart,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface MusicCardProps {
@@ -15,37 +26,19 @@ interface MusicCardProps {
   onAddToPlaylist?: (track: Track) => void;
   onAddToQueue?: (track: Track) => void;
   onRemove?: (track: Track) => void;
+  onToggleFavorite?: (track: Track) => void;
+  isFavorite?: boolean;
 }
 
-const moodColors: Record<Track["mood"], string> = {
-  Chill: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  Sad: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-  Night: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  Focus: "bg-green-500/20 text-green-300 border-green-500/30",
-  Unknown: "bg-gray-500/20 text-gray-300 border-gray-500/30",
-};
-
-export function MusicCard({ track, onPlay, onAddToPlaylist, onAddToQueue, onRemove }: MusicCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isMenuOpen]);
-
+export function MusicCard({
+  track,
+  onPlay,
+  onAddToPlaylist,
+  onAddToQueue,
+  onRemove,
+  onToggleFavorite,
+  isFavorite,
+}: MusicCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -62,120 +55,114 @@ export function MusicCard({ track, onPlay, onAddToPlaylist, onAddToQueue, onRemo
             className="object-cover"
             unoptimized
           />
-          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 active:bg-black/30 transition-colors flex items-center justify-center">
             <Button
               size="icon"
-              className="opacity-0 hover:opacity-100 transition-opacity rounded-full h-12 w-12"
+              className="opacity-0 hover:opacity-100 active:opacity-100 sm:active:opacity-100 transition-opacity rounded-full h-14 w-14 sm:h-12 sm:w-12 touch-manipulation"
               onClick={() => onPlay(track)}
             >
-              <Play className="h-6 w-6 fill-current" />
+              <Play className="h-7 w-7 sm:h-6 sm:w-6 fill-current" />
             </Button>
           </div>
         </div>
-        <div className="p-4 space-y-3">
-          <div>
-            <h3 className="font-semibold text-lg line-clamp-2 mb-1">
+        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3 overflow-hidden">
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm sm:text-lg line-clamp-2 mb-1">
               {track.title}
             </h3>
-            <p className="text-sm text-muted-foreground">{track.channelName}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+              {track.channelName}
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            {/* <Badge
-              variant="outline"
-              className={moodColors[track.mood]}
-            >
-              {track.mood}
-            </Badge> */}
-            <div className="flex gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {onToggleFavorite && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => onPlay(track)}
+                onClick={() => onToggleFavorite(track)}
+                title={isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                className={`h-10 w-10 sm:h-9 sm:w-10 p-0 flex-shrink-0 rounded-full touch-manipulation ${isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
               >
-                <Play className="h-4 w-4 mr-2" />
-                Phát
+                <Heart
+                  className={`h-5 w-5 sm:h-4 sm:w-4 ${isFavorite ? "fill-current" : ""}`}
+                />
               </Button>
-              {onAddToQueue && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onAddToQueue(track)}
-                  title="Thêm vào hàng đợi"
-                >
-                  <ListMusic className="h-4 w-4 mr-1" />
-                  Hàng đợi
-                </Button>
-              )}
-              {onAddToPlaylist && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onAddToPlaylist(track)}
-                  title="Thêm vào danh sách phát"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Thêm
-                </Button>
-              )}
-              {onRemove && (
-                <div className="relative" ref={menuRef}>
+            )}
+
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => onPlay(track)}
+              className="flex-shrink-0 text-xs sm:text-sm h-10 sm:h-9 px-3 sm:px-4 touch-manipulation"
+            >
+              <Play className="h-4 w-4 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+              <span className="hidden sm:inline">Phát</span>
+            </Button>
+
+            {onAddToQueue && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onAddToQueue(track)}
+                title="Thêm vào hàng đợi"
+                className="h-10 w-10 sm:h-9 sm:w-24 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
+              >
+                <ListMusic className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-2">Hàng đợi</span>
+              </Button>
+            )}
+
+            {onAddToPlaylist && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onAddToPlaylist(track)}
+                title="Thêm vào danh sách phát"
+                className="h-10 w-10 sm:h-9 sm:w-20 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
+              >
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-2">Thêm</span>
+              </Button>
+            )}
+
+            {onRemove && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsMenuOpen(!isMenuOpen);
                     }}
                     title="Tùy chọn"
-                    className="h-9 w-9 p-0"
+                    className="h-10 w-10 sm:h-9 sm:w-9 p-0 touch-manipulation"
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="h-5 w-5 sm:h-4 sm:w-4" />
                   </Button>
-
-                  <AnimatePresence>
-                    {isMenuOpen && (
-                      <>
-                        {/* Backdrop */}
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="fixed inset-0 z-40"
-                          onClick={() => setIsMenuOpen(false)}
-                        />
-
-                        {/* Menu */}
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                          className="absolute right-0 top-full mt-1 z-50 min-w-[200px]"
-                        >
-                          <Card className="p-1 shadow-lg border-border bg-card">
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start gap-3 h-10 px-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsMenuOpen(false);
-                                onRemove(track);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span>Xóa khỏi playlist</span>
-                            </Button>
-                          </Card>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-            </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  side="bottom"
+                  sideOffset={4}
+                  className="w-56 min-w-[200px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer py-3 text-base"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(track);
+                    }}
+                  >
+                    <Trash2 className="h-5 w-5 mr-3" />
+                    <span>Xóa khỏi playlist</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </Card>
     </motion.div>
   );
 }
-

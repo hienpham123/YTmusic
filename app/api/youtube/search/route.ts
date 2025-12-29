@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { detectMood } from "@/lib/mood";
 import { TrackMetadata } from "@/types/track";
 
 interface YouTubeSearchItem {
@@ -27,7 +26,10 @@ interface YouTubeSearchResponse {
 /**
  * Fetch video duration from YouTube API
  */
-async function fetchVideoDuration(videoId: string, apiKey: string): Promise<string> {
+async function fetchVideoDuration(
+  videoId: string,
+  apiKey: string
+): Promise<string> {
   try {
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=contentDetails`
@@ -74,7 +76,10 @@ export async function GET(request: NextRequest) {
     const maxResults = parseInt(searchParams.get("maxResults") || "20", 10);
 
     if (!query) {
-      return NextResponse.json({ error: "Query parameter 'q' is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Query parameter 'q' is required" },
+        { status: 400 }
+      );
     }
 
     const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
@@ -90,7 +95,10 @@ export async function GET(request: NextRequest) {
     searchUrl.searchParams.set("part", "snippet");
     searchUrl.searchParams.set("q", query);
     searchUrl.searchParams.set("type", "video");
-    searchUrl.searchParams.set("maxResults", Math.min(maxResults, 50).toString());
+    searchUrl.searchParams.set(
+      "maxResults",
+      Math.min(maxResults, 50).toString()
+    );
     searchUrl.searchParams.set("key", apiKey);
 
     const searchResponse = await fetch(searchUrl.toString());
@@ -112,14 +120,19 @@ export async function GET(request: NextRequest) {
 
     // Fetch durations for all videos in parallel
     const videoIds = searchData.items.map((item) => item.id.videoId);
-    const durationPromises = videoIds.map((id) => fetchVideoDuration(id, apiKey));
+    const durationPromises = videoIds.map((id) =>
+      fetchVideoDuration(id, apiKey)
+    );
     const durations = await Promise.all(durationPromises);
 
     // Convert to TrackMetadata format
     const tracks: TrackMetadata[] = searchData.items.map((item, index) => ({
       videoId: item.id.videoId,
       title: item.snippet.title,
-      thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url,
+      thumbnail:
+        item.snippet.thumbnails.high?.url ||
+        item.snippet.thumbnails.medium?.url ||
+        item.snippet.thumbnails.default.url,
       channelName: item.snippet.channelTitle,
       duration: durations[index] || "0:00",
     }));
@@ -133,4 +146,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

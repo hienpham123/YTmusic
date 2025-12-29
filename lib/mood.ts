@@ -7,13 +7,27 @@ export function detectMood(title: string): Mood {
   const lowerTitle = title.toLowerCase();
 
   // Chill patterns
-  const chillPatterns = ["lofi", "chill", "relax", "peaceful", "calm", "ambient"];
+  const chillPatterns = [
+    "lofi",
+    "chill",
+    "relax",
+    "peaceful",
+    "calm",
+    "ambient",
+  ];
   if (chillPatterns.some((pattern) => lowerTitle.includes(pattern))) {
     return "Chill";
   }
 
   // Sad patterns
-  const sadPatterns = ["sad", "buồn", "cry", "depressing", "melancholy", "heartbreak"];
+  const sadPatterns = [
+    "sad",
+    "buồn",
+    "cry",
+    "depressing",
+    "melancholy",
+    "heartbreak",
+  ];
   if (sadPatterns.some((pattern) => lowerTitle.includes(pattern))) {
     return "Sad";
   }
@@ -25,11 +39,17 @@ export function detectMood(title: string): Mood {
   }
 
   // Focus patterns
-  const focusPatterns = ["focus", "study", "code", "work", "concentrate", "productivity"];
+  const focusPatterns = [
+    "focus",
+    "study",
+    "code",
+    "work",
+    "concentrate",
+    "productivity",
+  ];
   if (focusPatterns.some((pattern) => lowerTitle.includes(pattern))) {
     return "Focus";
   }
 
   return "Unknown";
 }
-

@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Track } from "@/types/track";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, SkipBack, SkipForward, Repeat, Repeat1, Shuffle } from "lucide-react";
-import Image from "next/image";
+import { Repeat, Repeat1 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PlayerInfo } from "./player/PlayerInfo";
+import { PlayerControls } from "./player/PlayerControls";
+import { VolumeControl } from "./player/VolumeControl";
+import { ProgressBar } from "./player/ProgressBar";
+import { SpeedControl } from "./player/SpeedControl";
+import { useYouTubePlayer } from "@/hooks/player/useYouTubePlayer";
+
+declare global {
+  interface Window {
+    YT: typeof YT;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 
 type RepeatMode = "off" | "one" | "all";
 
@@ -27,13 +39,14 @@ interface MiniPlayerProps {
   onToggleRepeat?: () => void;
   onToggleShuffle?: () => void;
   onPlayerReady?: (player: YT.Player) => void;
-}
-
-declare global {
-  interface Window {
-    YT: typeof YT;
-    onYouTubeIframeAPIReady: () => void;
-  }
+  volume?: number;
+  isMuted?: boolean;
+  onVolumeChange?: (volume: number) => void;
+  onToggleMute?: () => void;
+  playbackSpeed?: number;
+  onSpeedChange?: (speed: number) => void;
+  onToggleFavorite?: (track: Track) => void;
+  isFavorite?: (track: Track) => boolean;
 }
 
 export function MiniPlayer({
@@ -54,46 +67,32 @@ export function MiniPlayer({
   onToggleRepeat,
   onToggleShuffle,
   onPlayerReady,
+  volume = 100,
+  isMuted = false,
+  onVolumeChange,
+  onToggleMute,
+  playbackSpeed = 1,
+  onSpeedChange,
+  onToggleFavorite,
+  isFavorite,
 }: MiniPlayerProps) {
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [seekValue, setSeekValue] = useState(0);
-  
   // Touch gestures for swipe left/right
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const swipeThreshold = 50; // Minimum distance for swipe
 
-  // Update seek value when currentTime changes (if not seeking)
-  useEffect(() => {
-    if (!isSeeking) {
-      // Use setTimeout to avoid cascading renders
-      setTimeout(() => {
-        setSeekValue(currentTime);
-      }, 0);
-    }
-  }, [currentTime, isSeeking]);
+  const { playerRef } = useYouTubePlayer({
+    track,
+    isPlaying,
+    onPlayerReady,
+    onVideoEnd,
+  });
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleSeekStart = () => {
-    setIsSeeking(true);
-  };
-
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    setSeekValue(value);
-  };
-
-  const handleSeekEnd = (e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
-    const target = e.target as HTMLInputElement;
-    const value = parseFloat(target.value);
-    onSeek(value);
-    setIsSeeking(false);
   };
 
   // Handle touch start for swipe gestures
@@ -108,12 +107,15 @@ export function MiniPlayer({
 
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
-    
+
     const deltaX = touchEndX - touchStartX.current;
     const deltaY = touchEndY - touchStartY.current;
 
     // Only process swipe if horizontal movement is greater than vertical (more horizontal swipe)
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+    if (
+      Math.abs(deltaX) > Math.abs(deltaY) &&
+      Math.abs(deltaX) > swipeThreshold
+    ) {
       if (deltaX > 0) {
         // Swipe right - previous track
         if (hasPrevious || repeatMode !== "off") {
@@ -130,77 +132,6 @@ export function MiniPlayer({
     touchStartX.current = null;
     touchStartY.current = null;
   };
-  const playerRef = useRef<HTMLDivElement>(null);
-  const ytPlayerRef = useRef<YT.Player | null>(null);
-  const [apiReady, setApiReady] = useState(false);
-
-  useEffect(() => {
-    // Load YouTube IFrame API
-    if (!window.YT) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-      window.onYouTubeIframeAPIReady = () => {
-        setApiReady(true);
-      };
-    } else {
-      // API already loaded, set ready in next tick to avoid cascading renders
-      setTimeout(() => setApiReady(true), 0);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!apiReady || !track || !playerRef.current) return;
-
-    if (!ytPlayerRef.current) {
-      ytPlayerRef.current = new window.YT.Player(playerRef.current, {
-        videoId: track.youtubeVideoId,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-        },
-        events: {
-          onReady: (event) => {
-            if (onPlayerReady) {
-              onPlayerReady(event.target);
-            }
-          },
-          onStateChange: (event: YT.OnStateChangeEvent) => {
-            // Auto next when video ends
-            if (event.data === YT.PlayerState.ENDED) {
-              onVideoEnd();
-            }
-            // Sync playing state
-            if (event.data === YT.PlayerState.PLAYING) {
-              // Video is playing
-            } else if (event.data === YT.PlayerState.PAUSED) {
-              // Video is paused
-            }
-          },
-        },
-      });
-    } else {
-      ytPlayerRef.current.loadVideoById(track.youtubeVideoId);
-    }
-
-    return () => {
-      // Don't destroy on track change, just load new video
-    };
-  }, [track, apiReady, onPlayerReady]);
-
-  useEffect(() => {
-    if (!ytPlayerRef.current) return;
-
-    if (isPlaying) {
-      ytPlayerRef.current.playVideo();
-    } else {
-      ytPlayerRef.current.pauseVideo();
-    }
-  }, [isPlaying]);
 
   if (!track) return null;
 
@@ -217,117 +148,132 @@ export function MiniPlayer({
         <div className="hidden">
           <div ref={playerRef} />
         </div>
-        <div className="mx-auto max-w-7xl px-4 py-3">
-          {/* Progress Bar */}
-          <div className="mb-2 relative">
-            <div className="relative w-full h-1 bg-muted/50 rounded-full overflow-hidden">
-              {/* Progress fill - white bar */}
-              <div
-                className="absolute left-0 top-0 h-full bg-white rounded-full transition-all duration-100"
-                style={{
-                  width: `${duration > 0 ? (seekValue / duration) * 100 : 0}%`,
-                }}
-              />
-            </div>
-            <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              value={seekValue}
-              step="1"
-              onMouseDown={handleSeekStart}
-              onTouchStart={handleSeekStart}
-              onChange={handleSeekChange}
-              onMouseUp={handleSeekEnd}
-              onTouchEnd={handleSeekEnd}
-              className="absolute inset-0 w-full h-1 opacity-0 cursor-pointer z-10"
+        <div className="mx-auto max-w-7xl px-2 sm:px-4 py-2 sm:py-3">
+          {/* Mobile Layout */}
+          <div className="block sm:hidden">
+            {/* Progress Bar - Top on Mobile */}
+            <ProgressBar
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={onSeek}
+              isMobile
             />
-          </div>
-          
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 overflow-hidden rounded-md">
-              <Image
-                src={track.thumbnail}
-                alt={track.title}
-                fill
-                className="object-cover"
-                unoptimized
+
+            {/* Track Info Row */}
+            <div className="mb-2">
+              <PlayerInfo
+                track={track}
+                isFavorite={isFavorite}
+                onToggleFavorite={onToggleFavorite}
+                isMobile
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="truncate font-medium text-sm sm:text-base">{track.title}</h4>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{formatTime(seekValue)}</span>
+
+            {/* Controls Row */}
+            <div className="flex items-center justify-between">
+              <PlayerControls
+                isPlaying={isPlaying}
+                hasNext={hasNext}
+                hasPrevious={hasPrevious}
+                repeatMode={repeatMode}
+                onPlay={onPlay}
+                onPause={onPause}
+                onNext={onNext}
+                onPrevious={onPrevious}
+                isMobile
+              />
+
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span>{formatTime(currentTime)}</span>
                 <span>/</span>
                 <span>{formatTime(duration)}</span>
               </div>
-            </div>
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              {onToggleShuffle && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleShuffle}
-                  className={`h-8 w-8 sm:h-9 sm:w-9 ${isShuffled ? "text-primary" : ""}`}
-                  title="Shuffle"
-                >
-                  <Shuffle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onPrevious}
-                disabled={!hasPrevious && repeatMode === "off"}
-                className="h-8 w-8 sm:h-9 sm:w-9"
-                title="Previous"
-              >
-                <SkipBack className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-              <Button
-                variant="default"
-                size="icon"
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full"
-                onClick={isPlaying ? onPause : onPlay}
-                title={isPlaying ? "Pause" : "Play"}
-              >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
-                ) : (
-                  <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
+
+              <div className="flex items-center gap-1">
+                {onSpeedChange && (
+                  <SpeedControl
+                    playbackSpeed={playbackSpeed}
+                    onSpeedChange={onSpeedChange}
+                  />
                 )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onNext}
-                disabled={!hasNext && repeatMode === "off"}
-                className="h-8 w-8 sm:h-9 sm:w-9"
-                title="Next"
-              >
-                <SkipForward className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-              {onToggleRepeat && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleRepeat}
-                  className={`h-8 w-8 sm:h-9 sm:w-9 ${repeatMode !== "off" ? "text-primary" : ""}`}
-                  title={
-                    repeatMode === "one"
-                      ? "Repeat one"
-                      : repeatMode === "all"
-                      ? "Repeat all"
-                      : "Repeat off"
-                  }
-                >
-                  {repeatMode === "one" ? (
-                    <Repeat1 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  ) : (
-                    <Repeat className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  )}
-                </Button>
-              )}
+                {onToggleMute && onVolumeChange && (
+                  <VolumeControl
+                    volume={volume}
+                    isMuted={isMuted}
+                    onVolumeChange={onVolumeChange}
+                    onToggleMute={onToggleMute}
+                    isMobile
+                  />
+                )}
+                {onToggleRepeat && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onToggleRepeat}
+                    className={`h-10 w-10 touch-manipulation ${repeatMode !== "off" ? "text-primary" : ""}`}
+                  >
+                    {repeatMode === "one" ? (
+                      <Repeat1 className="h-5 w-5" />
+                    ) : (
+                      <Repeat className="h-5 w-5" />
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden sm:block">
+            {/* Main Content - 3 columns layout */}
+            <div className="flex items-center gap-4 mb-3">
+              {/* Left: Track Info */}
+              <PlayerInfo
+                track={track}
+                isFavorite={isFavorite}
+                onToggleFavorite={onToggleFavorite}
+              />
+
+              {/* Center: Playback Controls */}
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <PlayerControls
+                  isPlaying={isPlaying}
+                  hasNext={hasNext}
+                  hasPrevious={hasPrevious}
+                  repeatMode={repeatMode}
+                  isShuffled={isShuffled}
+                  onPlay={onPlay}
+                  onPause={onPause}
+                  onNext={onNext}
+                  onPrevious={onPrevious}
+                  onToggleRepeat={onToggleRepeat}
+                  onToggleShuffle={onToggleShuffle}
+                />
+                {/* Progress Bar - Below Controls */}
+                <ProgressBar
+                  currentTime={currentTime}
+                  duration={duration}
+                  onSeek={onSeek}
+                />
+              </div>
+
+              {/* Right: Speed & Volume Control */}
+              <div className="flex items-center gap-2">
+                {onSpeedChange && (
+                  <SpeedControl
+                    playbackSpeed={playbackSpeed}
+                    onSpeedChange={onSpeedChange}
+                  />
+                )}
+                {onToggleMute && onVolumeChange && (
+                  <VolumeControl
+                    volume={volume}
+                    isMuted={isMuted}
+                    onVolumeChange={onVolumeChange}
+                    onToggleMute={onToggleMute}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -335,4 +281,3 @@ export function MiniPlayer({
     </AnimatePresence>
   );
 }
-

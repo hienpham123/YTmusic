@@ -1,4 +1,4 @@
-# 🎧 YT Music Hub – Notion for Music
+# 🎧 YT Music – Notion for Music
 
 Một website nghe nhạc **tìm kiếm và phát nhạc từ YouTube**. Không download, không lách luật, tập trung vào **trải nghiệm lưu trữ – sắp xếp – nghe nhạc như Notion**.
 
@@ -15,19 +15,21 @@ Một website nghe nhạc **tìm kiếm và phát nhạc từ YouTube**. Không 
 
 ### Yêu cầu
 
-- Node.js 18+ 
+- Node.js 18+
 - npm hoặc yarn
 - YouTube Data API v3 Key (miễn phí từ Google Cloud Console)
 
 ### Cài đặt
 
 1. **Clone repository**
+
 ```bash
 git clone <your-repo-url>
 cd music-player
 ```
 
 2. **Cài đặt dependencies**
+
 ```bash
 npm install
 ```
@@ -35,6 +37,7 @@ npm install
 3. **Cấu hình environment variables**
 
 Tạo file `.env.local`:
+
 ```env
 NEXT_PUBLIC_YOUTUBE_API_KEY=your_youtube_api_key_here
 
@@ -45,13 +48,15 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
 Lấy YouTube API Key:
+
 1. Truy cập [Google Cloud Console](https://console.cloud.google.com/)
 2. Tạo project mới hoặc chọn project hiện có
 3. Enable YouTube Data API v3
 4. Tạo API Key trong Credentials
 5. Copy API Key vào `.env.local`
 
-4. **Chạy development server**
+6. **Chạy development server**
+
 ```bash
 npm run dev
 ```

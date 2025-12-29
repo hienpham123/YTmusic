@@ -14,26 +14,31 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error("❌ OAuth error:", error, errorDescription);
     return NextResponse.redirect(
-      new URL(`/?error=${encodeURIComponent(errorDescription || error)}`, requestUrl.origin)
+      new URL(
+        `/?error=${encodeURIComponent(errorDescription || error)}`,
+        requestUrl.origin
+      )
     );
   }
 
   if (code) {
     try {
-      console.log("🔄 Exchanging OAuth code for session...");
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const { data, error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
 
       if (exchangeError) {
         console.error("❌ Error exchanging code for session:", exchangeError);
         return NextResponse.redirect(
-          new URL(`/?error=${encodeURIComponent(exchangeError.message)}`, requestUrl.origin)
+          new URL(
+            `/?error=${encodeURIComponent(exchangeError.message)}`,
+            requestUrl.origin
+          )
         );
       }
 
       if (data.session) {
-        console.log("✅ OAuth login successful:", data.user?.email);
         // Redirect to home - Supabase client will handle session storage
         return NextResponse.redirect(new URL("/", requestUrl.origin));
       }
@@ -48,4 +53,3 @@ export async function GET(request: NextRequest) {
   // No code provided, redirect to home
   return NextResponse.redirect(new URL("/", requestUrl.origin));
 }
-

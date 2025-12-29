@@ -63,24 +63,29 @@ export function CreatePlaylistModal({
           initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="relative z-50 w-full max-w-md"
+          className="relative z-50 w-full max-w-md mx-4"
         >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Tạo Playlist Mới</h2>
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold">
+                Tạo Playlist Mới
+              </h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="h-8 w-8"
+                className="h-8 w-8 sm:h-10 sm:w-10"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="playlist-name" className="block text-sm font-medium mb-2">
+                <label
+                  htmlFor="playlist-name"
+                  className="block text-sm font-medium mb-2"
+                >
                   Tên playlist
                 </label>
                 <Input
@@ -91,6 +96,7 @@ export function CreatePlaylistModal({
                   onChange={(e) => setName(e.target.value)}
                   disabled={loading}
                   autoFocus
+                  className="h-11 sm:h-10"
                 />
               </div>
 
@@ -100,16 +106,21 @@ export function CreatePlaylistModal({
                 </div>
               )}
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onClose}
                   disabled={loading}
+                  className="w-full sm:w-auto h-11 sm:h-10"
                 >
                   Hủy
                 </Button>
-                <Button type="submit" disabled={loading || !name.trim()}>
+                <Button
+                  type="submit"
+                  disabled={loading || !name.trim()}
+                  className="w-full sm:w-auto h-11 sm:h-10"
+                >
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -130,4 +141,3 @@ export function CreatePlaylistModal({
     </AnimatePresence>
   );
 }
-

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Playlist } from "@/types/playlist";
 import { Track } from "@/types/track";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { parseDurationToSeconds, formatDuration } from "@/lib/duration";
 
 interface PlaylistPanelProps {
   playlist: Playlist | null;
@@ -21,10 +20,9 @@ export function PlaylistPanel({
   onPlayTrack,
   onRemoveTrack,
 }: PlaylistPanelProps) {
-
   if (!playlist) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
+      <div className="p-4 text-center text-muted-foreground text-sm">
         Chưa có playlist nào
       </div>
     );
@@ -35,75 +33,108 @@ export function PlaylistPanel({
 
   if (tracks.length === 0) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
+      <div className="p-4 text-center text-muted-foreground text-sm">
         Playlist trống. Thêm bài hát để bắt đầu!
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 p-4">
-      <div className="mb-4">
-        <h3 className="font-semibold text-lg mb-3">{playlist.name}</h3>
-      </div>
-      {tracks.length === 0 ? (
-        <div className="p-4 text-center text-muted-foreground text-sm">
-          Playlist trống. Thêm bài hát để bắt đầu!
-        </div>
-      ) : (
-        tracks.map((track, index) => (
-        <motion.div
-          key={track.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.05 }}
-        >
-          <Card
-            className={`p-3 cursor-pointer transition-colors ${
-              currentTrackId === track.id
-                ? "bg-primary/10 border-primary"
-                : "hover:bg-accent"
+    <div className="space-y-1 p-2">
+      {tracks.map((track, index) => {
+        const isPlaying = currentTrackId === track.id;
+        // Display duration directly if it's already formatted (e.g., "4:18"), otherwise parse and format
+        const displayDuration =
+          track.duration &&
+          typeof track.duration === "string" &&
+          track.duration.includes(":")
+            ? track.duration
+            : track.duration
+              ? formatDuration(parseDurationToSeconds(track.duration))
+              : null;
+
+        return (
+          <div
+            key={track.id}
+            className={`group flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer ${
+              isPlaying
+                ? "bg-primary/10 hover:bg-primary/15"
+                : "hover:bg-accent/50"
             }`}
             onClick={() => onPlayTrack(track)}
           >
-            <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium truncate">{track.title}</h4>
-                <p className="text-sm text-muted-foreground truncate">
-                  {track.channelName}
-                </p>
+            {/* Play Icon or Index */}
+            <div className="flex-shrink-0 w-5 flex items-center justify-center">
+              {isPlaying ? (
+                <Play className="h-3 w-3 text-primary fill-primary" />
+              ) : (
+                <span className="text-[10px] text-muted-foreground group-hover:hidden">
+                  {index + 1}
+                </span>
+              )}
+              <Play
+                className={`h-3 w-3 text-muted-foreground hidden group-hover:block ${
+                  isPlaying ? "hidden" : ""
+                }`}
+              />
+            </div>
+
+            {/* Thumbnail */}
+            <div className="relative flex-shrink-0 w-12 aspect-video rounded overflow-hidden bg-muted">
+              <Image
+                src={track.thumbnail}
+                alt={track.title}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+
+            {/* Track Info */}
+            <div className="flex-1 min-w-0">
+              <h4
+                className={`font-medium truncate text-xs ${
+                  isPlaying ? "text-primary" : "text-foreground"
+                }`}
+              >
+                {track.title}
+              </h4>
+              <p className="text-[10px] text-muted-foreground truncate">
+                {track.channelName}
+              </p>
+            </div>
+
+            {/* Duration */}
+            {displayDuration && displayDuration !== "0:00" && (
+              <div className="flex-shrink-0 text-[10px] text-muted-foreground">
+                {typeof displayDuration === "string"
+                  ? displayDuration
+                  : formatDuration(displayDuration)}
               </div>
-              <div className="flex items-center gap-2">
+            )}
+
+            {/* Remove Button */}
+            {onRemoveTrack && (
+              <div
+                className="flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onPlayTrack(track);
+                    onRemoveTrack(track.id);
                   }}
                 >
-                  <Play className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3" />
                 </Button>
-                {onRemoveTrack && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveTrack(track.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
-            </div>
-          </Card>
-        </motion.div>
-      )))}
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
-

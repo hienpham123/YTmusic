@@ -8,10 +8,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const { error } = await supabase
-      .from("tracks")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("tracks").delete().eq("id", id);
 
     if (error) {
       throw error;
@@ -21,9 +18,11 @@ export async function DELETE(
   } catch (error: unknown) {
     console.error("Error deleting track:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete track" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to delete track",
+      },
       { status: 500 }
     );
   }
 }
-

@@ -9,7 +9,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabaseKey = supabaseServiceKey || supabaseAnonKey;
 
 // Check if URL is valid
-const isValidUrl = supabaseUrl && (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
+const isValidUrl =
+  supabaseUrl &&
+  (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
 
 let supabase: ReturnType<typeof createClient>;
 
@@ -20,11 +22,7 @@ if (isValidUrl && supabaseKey) {
     "Supabase URL and Key are not configured. Please add them to .env.local. Using dummy client."
   );
   // Create dummy client to prevent crashes
-  supabase = createClient(
-    "https://placeholder.supabase.co",
-    "placeholder-key"
-  );
+  supabase = createClient("https://placeholder.supabase.co", "placeholder-key");
 }
 
 export { supabase };
-

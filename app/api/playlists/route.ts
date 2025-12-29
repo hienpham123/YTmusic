@@ -6,22 +6,21 @@ export async function GET(request: NextRequest) {
   try {
     // Get user from session (you'll need to implement auth)
     const authHeader = request.headers.get("authorization");
-    
+
     if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // For now, we'll use a simple approach
     // In production, verify JWT token from Supabase
     const { data: playlists, error } = await supabase
       .from("playlists")
-      .select(`
+      .select(
+        `
         *,
         tracks (*)
-      `)
+      `
+      )
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -32,7 +31,10 @@ export async function GET(request: NextRequest) {
   } catch (error: unknown) {
     console.error("Error fetching playlists:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch playlists" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to fetch playlists",
+      },
       { status: 500 }
     );
   }
@@ -69,9 +71,11 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.error("Error creating playlist:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create playlist" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to create playlist",
+      },
       { status: 500 }
     );
   }
 }
-

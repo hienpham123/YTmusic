@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YT Music Hub – Notion for Music",
-  description: "Tìm kiếm và nghe nhạc YouTube. Lưu trữ và quản lý playlist cá nhân.",
+  title: "YT Music – Notion for Music",
+  description:
+    "Tìm kiếm và nghe nhạc YouTube. Lưu trữ và quản lý playlist cá nhân.",
 };
 
 export default function RootLayout({

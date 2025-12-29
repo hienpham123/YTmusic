@@ -13,7 +13,14 @@ interface SearchBarProps {
   className?: string;
 }
 
-export function SearchBar({ value, onChange, onFocus, onBlur, placeholder = "Tìm kiếm...", className }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  onFocus,
+  onBlur,
+  placeholder = "Tìm kiếm...",
+  className,
+}: SearchBarProps) {
   return (
     <div className={`relative ${className}`}>
       <Input
@@ -38,4 +45,3 @@ export function SearchBar({ value, onChange, onFocus, onBlur, placeholder = "Tì
     </div>
   );
 }
-

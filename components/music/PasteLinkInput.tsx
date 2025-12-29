@@ -11,7 +11,10 @@ interface PasteLinkInputProps {
   isLoading?: boolean;
 }
 
-export function PasteLinkInput({ onPaste, isLoading = false }: PasteLinkInputProps) {
+export function PasteLinkInput({
+  onPaste,
+  isLoading = false,
+}: PasteLinkInputProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
 
@@ -76,4 +79,3 @@ export function PasteLinkInput({ onPaste, isLoading = false }: PasteLinkInputPro
     </form>
   );
 }
-

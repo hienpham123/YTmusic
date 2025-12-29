@@ -8,7 +8,10 @@ export async function POST(request: NextRequest) {
     const { videoId } = await request.json();
 
     if (!videoId) {
-      return NextResponse.json({ error: "Video ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Video ID is required" },
+        { status: 400 }
+      );
     }
 
     const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
@@ -46,4 +49,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

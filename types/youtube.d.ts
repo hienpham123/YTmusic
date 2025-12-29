@@ -31,7 +31,7 @@ declare namespace YT {
     };
     events?: {
       onReady?: (event: { target: Player }) => void;
-      onStateChange?: (event: OnStateChangeEvent) => void;
+      onStateChange?: (event: OnStateChangeEvent & { target?: Player }) => void;
       onError?: (event: { data: number }) => void;
       [key: string]: ((event: any) => void) | undefined;
     };
@@ -50,9 +50,11 @@ declare namespace YT {
     getPlayerState(): number;
     loadVideoById(videoId: string, startSeconds?: number): void;
     cueVideoById(videoId: string, startSeconds?: number): void;
+    setVolume(volume: number): void;
+    mute(): void;
+    unMute(): void;
     destroy(): void;
   }
 
   const PlayerState: PlayerState;
 }
-

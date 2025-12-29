@@ -6,12 +6,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 // Create a dummy client if URL is not configured to prevent crashes
-const isValidUrl = supabaseUrl && (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
+const isValidUrl =
+  supabaseUrl &&
+  (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
 
 let supabase: ReturnType<typeof createClient>;
 
 if (isValidUrl && supabaseAnonKey) {
-  console.log("✅ Supabase client initialized with URL:", supabaseUrl.substring(0, 30) + "...");
   supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
@@ -24,7 +25,10 @@ if (isValidUrl && supabaseAnonKey) {
     "⚠️ Supabase URL and Anon Key are not configured. Please add them to .env.local. Using dummy client."
   );
   console.warn("Current URL:", supabaseUrl || "empty");
-  console.warn("Current Key:", supabaseAnonKey ? "***" + supabaseAnonKey.slice(-4) : "empty");
+  console.warn(
+    "Current Key:",
+    supabaseAnonKey ? "***" + supabaseAnonKey.slice(-4) : "empty"
+  );
   // Use a dummy URL to create client (won't work but won't crash)
   supabase = createClient(
     "https://placeholder.supabase.co",
@@ -39,4 +43,3 @@ if (isValidUrl && supabaseAnonKey) {
 }
 
 export { supabase };
-

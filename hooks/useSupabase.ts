@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { Playlist } from "@/types/playlist";
 import { Track } from "@/types/track";
+import type { User } from "@supabase/supabase-js";
+import { playlistService } from "@/services/playlistService";
 
 export function useSupabase() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Get current user
@@ -33,7 +35,7 @@ export function useSupabase() {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user ?? null);
-        
+
         // Ensure user record exists when user logs in
         if (session?.user) {
           // Small delay to ensure state is updated
@@ -48,15 +50,21 @@ export function useSupabase() {
                   .single();
 
                 if (!existingUser) {
-                  console.log("👤 Creating user record for:", tempUser.email);
-                  await (supabase.from("users") as any).insert({
+                  await supabase.from("users").insert({
                     id: tempUser.id,
                     email: tempUser.email || "",
-                    name: tempUser.user_metadata?.full_name || tempUser.user_metadata?.name || tempUser.email?.split("@")[0] || "User",
+                    name:
+                      tempUser.user_metadata?.full_name ||
+                      tempUser.user_metadata?.name ||
+                      tempUser.email?.split("@")[0] ||
+                      "User",
                   } as any);
                 }
               } catch (error) {
-                console.error("Error ensuring user exists on auth change:", error);
+                console.error(
+                  "Error ensuring user exists on auth change:",
+                  error
+                );
               }
             }
           }, 100);
@@ -64,7 +72,7 @@ export function useSupabase() {
       });
 
       return () => subscription.unsubscribe();
-    } catch (error) {
+    } catch {
       // Supabase not configured
       return () => {};
     }
@@ -73,35 +81,38 @@ export function useSupabase() {
   // Sign in with email/password
   const signIn = useCallback(async (email: string, password: string) => {
     try {
-      console.log("🔐 Attempting to sign in...");
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) {
         console.error("❌ Sign in error:", error);
         throw error;
       }
-      
-      console.log("✅ Sign in successful:", data.user?.email);
+
       return data;
     } catch (error: unknown) {
       const err = error as { message?: string; status?: number };
       console.error("❌ Sign in failed:", err);
-      
-      if (err.message?.includes("placeholder") || err.message?.includes("Failed to fetch")) {
-        throw new Error("Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local");
+
+      if (
+        err.message?.includes("placeholder") ||
+        err.message?.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local"
+        );
       }
-      
+
       if (err.message?.includes("Invalid login credentials")) {
         throw new Error("Email hoặc mật khẩu không đúng");
       }
-      
+
       if (err.message?.includes("Email not confirmed")) {
         throw new Error("Vui lòng xác nhận email trước khi đăng nhập");
       }
-      
+
       throw new Error(err.message || "Không thể đăng nhập. Vui lòng thử lại.");
     }
   }, []);
@@ -109,31 +120,34 @@ export function useSupabase() {
   // Sign up with email/password
   const signUp = useCallback(async (email: string, password: string) => {
     try {
-      console.log("📝 Attempting to sign up...");
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
-      
+
       if (error) {
         console.error("❌ Sign up error:", error);
         throw error;
       }
-      
-      console.log("✅ Sign up successful:", data.user?.email);
+
       return data;
     } catch (error: unknown) {
       const err = error as { message?: string; status?: number };
       console.error("❌ Sign up failed:", err);
-      
-      if (err.message?.includes("placeholder") || err.message?.includes("Failed to fetch")) {
-        throw new Error("Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local");
+
+      if (
+        err.message?.includes("placeholder") ||
+        err.message?.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local"
+        );
       }
-      
+
       if (err.message?.includes("User already registered")) {
         throw new Error("Email này đã được đăng ký. Vui lòng đăng nhập");
       }
-      
+
       throw new Error(err.message || "Không thể đăng ký. Vui lòng thử lại.");
     }
   }, []);
@@ -141,60 +155,70 @@ export function useSupabase() {
   // Sign in with GitHub
   const signInWithGitHub = useCallback(async () => {
     try {
-      console.log("🔐 Attempting to sign in with GitHub...");
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      
+
       if (error) {
         console.error("❌ GitHub sign in error:", error);
         throw error;
       }
-      
-      console.log("✅ GitHub OAuth initiated");
+
       return data;
     } catch (error: unknown) {
       const err = error as { message?: string };
       console.error("❌ GitHub sign in failed:", err);
-      
-      if (err.message?.includes("placeholder") || err.message?.includes("Failed to fetch")) {
-        throw new Error("Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local");
+
+      if (
+        err.message?.includes("placeholder") ||
+        err.message?.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local"
+        );
       }
-      
-      throw new Error(err.message || "Không thể đăng nhập với GitHub. Vui lòng thử lại.");
+
+      throw new Error(
+        err.message || "Không thể đăng nhập với GitHub. Vui lòng thử lại."
+      );
     }
   }, []);
 
   // Sign in with Google
   const signInWithGoogle = useCallback(async () => {
     try {
-      console.log("🔐 Attempting to sign in with Google...");
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      
+
       if (error) {
         console.error("❌ Google sign in error:", error);
         throw error;
       }
-      
-      console.log("✅ Google OAuth initiated");
+
       return data;
     } catch (error: unknown) {
       const err = error as { message?: string };
       console.error("❌ Google sign in failed:", err);
-      
-      if (err.message?.includes("placeholder") || err.message?.includes("Failed to fetch")) {
-        throw new Error("Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local");
+
+      if (
+        err.message?.includes("placeholder") ||
+        err.message?.includes("Failed to fetch")
+      ) {
+        throw new Error(
+          "Supabase chưa được cấu hình. Vui lòng thêm credentials vào .env.local"
+        );
       }
-      
-      throw new Error(err.message || "Không thể đăng nhập với Google. Vui lòng thử lại.");
+
+      throw new Error(
+        err.message || "Không thể đăng nhập với Google. Vui lòng thử lại."
+      );
     }
   }, []);
 
@@ -233,23 +257,24 @@ export function useSupabase() {
 
       // If user doesn't exist, create it
       if (!existingUser) {
-        console.log("👤 Creating user record for:", user.email);
-        const { error: insertError } = await (supabase.from("users") as any).insert({
+        const { error: insertError } = await supabase.from("users").insert({
           id: user.id,
           email: user.email || "",
-          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "User",
+          name:
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split("@")[0] ||
+            "User",
         } as any);
 
         if (insertError) {
           console.error("❌ Error creating user record:", insertError);
-        } else {
-          console.log("✅ User record created");
         }
       }
     } catch (error) {
       console.error("❌ Error ensuring user exists:", error);
     }
-  }, [user]);
+  }, [user?.id, user?.email, user?.user_metadata]);
 
   // Load playlists from Supabase
   const loadPlaylists = useCallback(async (): Promise<Playlist[]> => {
@@ -260,10 +285,12 @@ export function useSupabase() {
 
     const { data, error } = await supabase
       .from("playlists")
-      .select(`
+      .select(
+        `
         *,
         tracks (*)
-      `)
+      `
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -273,27 +300,43 @@ export function useSupabase() {
     }
 
     // Transform data to match our Playlist type
+    interface SupabasePlaylistData {
+      id: string;
+      user_id: string;
+      name: string;
+      created_at: string;
+      tracks?: Array<{
+        id: string;
+        youtube_video_id: string;
+        title: string;
+        thumbnail: string;
+        channel_name: string;
+        duration?: string;
+        mood?: string;
+        created_at: string;
+      }>;
+    }
     return (
-      data?.map((p: any) => ({
+      data?.map((p: SupabasePlaylistData) => ({
         id: p.id,
         userId: p.user_id,
         name: p.name,
-        tracks: Array.isArray(p.tracks) 
-          ? p.tracks.map((t: any) => ({
+        tracks: Array.isArray(p.tracks)
+          ? p.tracks.map((t) => ({
               id: t.id,
               youtubeVideoId: t.youtube_video_id,
               title: t.title,
               thumbnail: t.thumbnail,
               channelName: t.channel_name,
-              duration: t.duration,
-              mood: t.mood as Track["mood"],
+              duration: t.duration || "",
+              mood: (t.mood || "Unknown") as Track["mood"],
               createdAt: new Date(t.created_at),
             }))
           : [], // Always ensure tracks is an array
         createdAt: new Date(p.created_at),
       })) || []
     );
-  }, [user, ensureUserExists]);
+  }, [user?.id, ensureUserExists]);
 
   // Save playlist to Supabase
   const savePlaylist = useCallback(
@@ -306,73 +349,16 @@ export function useSupabase() {
       // Ensure user exists first
       await ensureUserExists();
 
-      console.log("💾 Saving playlist to Supabase:", playlist.name, playlist.id);
-
-      // Create or update playlist
-      const { data: playlistData, error: playlistError } = await (supabase
-        .from("playlists") as any)
-        .upsert({
-          id: playlist.id,
-          user_id: user.id,
-          name: playlist.name,
-        }, {
-          onConflict: 'id'
-        })
-        .select()
-        .single();
-
-      if (playlistError) {
-        console.error("❌ Error saving playlist to Supabase:", playlistError);
-        throw playlistError;
-      }
-
-      console.log("✅ Playlist saved to Supabase:", playlistData);
-
-      // Save tracks
-      if (playlist.tracks.length > 0) {
-        const tracksToInsert = playlist.tracks.map((track) => ({
-          id: track.id,
-          playlist_id: (playlistData as any).id,
-          youtube_video_id: track.youtubeVideoId,
-          title: track.title,
-          thumbnail: track.thumbnail,
-          channel_name: track.channelName,
-          duration: track.duration,
-          mood: track.mood,
-        }));
-
-        // Delete existing tracks first
-        await supabase
-          .from("tracks")
-          .delete()
-          .eq("playlist_id", playlistData.id);
-
-        // Insert new tracks
-        const { error: tracksError } = await (supabase
-          .from("tracks") as any)
-          .insert(tracksToInsert);
-
-        if (tracksError) throw tracksError;
-      }
-
-      return {
-        ...playlist,
-        id: playlistData.id,
-      };
+      const saved = await playlistService.savePlaylist(playlist, user.id);
+      return saved;
     },
-    [user]
+    [user?.id, ensureUserExists]
   );
 
   // Add track to playlist
   const addTrackToPlaylist = useCallback(
     async (playlistId: string, track: Track) => {
       if (!user) throw new Error("User not authenticated");
-
-      console.log("💾 Inserting track into Supabase:", {
-        playlistId,
-        youtubeVideoId: track.youtubeVideoId,
-        title: track.title,
-      });
 
       // Ensure user exists first
       await ensureUserExists();
@@ -394,7 +380,6 @@ export function useSupabase() {
         console.error("❌ Supabase insert error:", error);
         // If duplicate, return existing track
         if (error.code === "23505") {
-          console.log("⚠️ Track already exists, fetching existing...");
           const { data: existing } = await supabase
             .from("tracks")
             .select()
@@ -406,10 +391,9 @@ export function useSupabase() {
         throw error;
       }
 
-      console.log("✅ Track inserted successfully:", data);
       return data;
     },
-    [user, ensureUserExists]
+    [user?.id, ensureUserExists]
   );
 
   // Remove track from playlist
@@ -425,7 +409,7 @@ export function useSupabase() {
 
       if (error) throw error;
     },
-    [user]
+    [user?.id]
   );
 
   return {
@@ -442,4 +426,3 @@ export function useSupabase() {
     removeTrackFromPlaylist,
   };
 }
-
