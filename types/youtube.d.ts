@@ -54,6 +54,7 @@ declare namespace YT {
     mute(): void;
     unMute(): void;
     destroy(): void;
+    setPlaybackRate(speed: number): void;
   }
 
   const PlayerState: PlayerState;

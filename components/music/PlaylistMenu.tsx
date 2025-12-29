@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface PlaylistMenuProps {
+  triggerClassName?: string;
+  triggerIcon?: React.ReactNode;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function PlaylistMenu({ onEdit, onDelete }: PlaylistMenuProps) {
+export function PlaylistMenu({ triggerClassName, triggerIcon, onEdit, onDelete }: PlaylistMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -27,7 +29,7 @@ export function PlaylistMenu({ onEdit, onDelete }: PlaylistMenuProps) {
           }}
           title="Tùy chọn"
         >
-          <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />
+          {triggerIcon || <MoreHorizontal className="h-5 w-5 sm:h-4 sm:w-4" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

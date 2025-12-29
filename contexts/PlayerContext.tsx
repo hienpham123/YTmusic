@@ -6,8 +6,8 @@ import { usePlayer } from "@/hooks/usePlayer";
 interface PlayerContextType {
   currentTrack: ReturnType<typeof usePlayer>["currentTrack"];
   isPlaying: ReturnType<typeof usePlayer>["isPlaying"];
-  sourcePlaylist: ReturnType<typeof usePlayer>["sourcePlaylist"];
-  sourceIndex: ReturnType<typeof usePlayer>["sourceIndex"];
+  playlist: ReturnType<typeof usePlayer>["playlist"];
+  currentIndex: ReturnType<typeof usePlayer>["currentIndex"];
   currentTime: ReturnType<typeof usePlayer>["currentTime"];
   duration: ReturnType<typeof usePlayer>["duration"];
   repeatMode: ReturnType<typeof usePlayer>["repeatMode"];
@@ -29,6 +29,10 @@ interface PlayerContextType {
   setPlaybackSpeedLevel: ReturnType<typeof usePlayer>["setPlaybackSpeedLevel"];
   autoQueue: ReturnType<typeof usePlayer>["autoQueue"];
   toggleAutoQueue: ReturnType<typeof usePlayer>["toggleAutoQueue"];
+  shufflePlaylist: ReturnType<typeof usePlayer>["shufflePlaylist"];
+  setPlaylist: ReturnType<typeof usePlayer>["setPlaylist"];
+  addToPlaylist: ReturnType<typeof usePlayer>["addToPlaylist"];
+  removeFromPlaylist: ReturnType<typeof usePlayer>["removeFromPlaylist"];
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
