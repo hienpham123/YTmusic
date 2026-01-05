@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
 
 // GET /api/play-history - Get play history for current user
 export async function GET(request: NextRequest) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
 
+    // Filter by user_id
     const { data: history, error } = await supabase
       .from("play_history")
       .select("*")
+      .eq("user_id", user.id)
       .order("played_at", { ascending: false })
       .limit(limit);
 

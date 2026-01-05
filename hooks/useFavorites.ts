@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { Track } from "@/types/track";
 import { useUserStore } from "@/stores/userStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
+import { supabase } from "@/lib/supabase/client";
 
 export function useFavorites() {
   const user = useUserStore((state) => state.user);
@@ -62,10 +63,29 @@ export function useFavorites() {
       return;
     }
 
+    // Get access token for authentication
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setFavorites([]);
+      setIsLoading(false);
+      setHasLoaded(true);
+      hasLoadedRef.current = true;
+      loadingRef.current = false;
+      return;
+    }
+
     // Minimum delay to ensure skeleton shows
     const startTime = Date.now();
     const [response] = await Promise.all([
-      fetch("/api/favorites"),
+      fetch("/api/favorites", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
       new Promise((resolve) => setTimeout(resolve, 500)), // Increased to 500ms
     ]);
 
@@ -154,10 +174,21 @@ export function useFavorites() {
       }
 
       try {
+        // Get access token for authentication
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+
+        if (!accessToken) {
+          throw new Error("Not authenticated");
+        }
+
         const response = await fetch("/api/favorites", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             userId: currentUser.id,
@@ -206,10 +237,23 @@ export function useFavorites() {
       }
 
       try {
+        // Get access token for authentication
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+
+        if (!accessToken) {
+          throw new Error("Not authenticated");
+        }
+
         const response = await fetch(
           `/api/favorites?userId=${currentUser.id}&youtubeVideoId=${track.youtubeVideoId}`,
           {
             method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
         );
 
