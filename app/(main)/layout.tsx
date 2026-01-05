@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { MiniPlayer } from "@/components/music/MiniPlayer";
 import { CreatePlaylistModal } from "@/components/music/CreatePlaylistModal";
 import { EditPlaylistModal } from "@/components/music/EditPlaylistModal";
@@ -67,9 +68,11 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     setPlaybackSpeedLevel,
   } = usePlayerContext();
 
+  // Calculate bottom padding based on whether MiniPlayer is visible
+  const hasPlayer = !!currentTrack;
+
   const {
     playlists,
-    currentPlaylist,
     setCurrentPlaylist,
     createPlaylist,
     updatePlaylist,
@@ -216,19 +219,33 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <div className="flex flex-1 pt-14 relative">
+      <div className="flex flex-1 pt-14 sm:pt-16 relative">
         <Sidebar />
         <main
           className={cn(
-            "flex-1 min-h-[calc(100vh-3.5rem)] transition-all duration-300",
+            "flex-1 min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] transition-all duration-300",
             isCollapsed ? "md:ml-16" : "md:ml-64"
           )}
         >
-          <div className="h-full overflow-y-auto pb-24 sm:pb-32">
-            {children}
+          <div className="h-full overflow-y-auto safe-area-bottom">
+            <div className="min-h-full">
+              {children}
+              {/* Spacer to prevent MiniPlayer from covering content - exact height match */}
+              <div
+                className={cn(
+                  "transition-all duration-300",
+                  hasPlayer
+                    ? "h-[150px] sm:h-[130px] md:h-[100px]" // Exact MiniPlayer height on mobile
+                    : "h-16 sm:h-16 md:h-0" // Only BottomNavigation (mobile) or nothing (desktop)
+                )}
+              />
+            </div>
           </div>
         </main>
       </div>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation />
 
       {/* Mini Player */}
       <MiniPlayer

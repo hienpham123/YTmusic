@@ -58,19 +58,19 @@ export function MusicCard({
           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 active:bg-black/30 transition-colors flex items-center justify-center">
             <Button
               size="icon"
-              className="opacity-0 hover:opacity-100 active:opacity-100 sm:active:opacity-100 transition-opacity rounded-full h-14 w-14 sm:h-12 sm:w-12 touch-manipulation"
+              className="opacity-0 hover:opacity-100 active:opacity-100 sm:active:opacity-100 transition-opacity rounded-full h-16 w-16 sm:h-12 sm:w-12 touch-manipulation"
               onClick={() => onPlay(track)}
             >
-              <Play className="h-7 w-7 sm:h-6 sm:w-6 fill-current" />
+              <Play className="h-8 w-8 sm:h-6 sm:w-6 fill-current" />
             </Button>
           </div>
         </div>
-        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3 overflow-hidden">
+        <div className="p-4 sm:p-4 space-y-3 sm:space-y-3 overflow-hidden">
           <div className="min-w-0">
-            <h3 className="font-semibold text-sm sm:text-lg line-clamp-2 mb-1">
+            <h3 className="font-semibold text-base sm:text-lg line-clamp-2 mb-1.5">
               {track.title}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+            <p className="text-sm sm:text-sm text-muted-foreground truncate">
               {track.channelName}
             </p>
           </div>
@@ -81,7 +81,7 @@ export function MusicCard({
                 size="sm"
                 onClick={() => onToggleFavorite(track)}
                 title={isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
-                className={`h-10 w-10 sm:h-9 sm:w-10 p-0 flex-shrink-0 rounded-full touch-manipulation ${isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
+                className={`h-11 w-11 sm:h-9 sm:w-10 p-0 flex-shrink-0 rounded-full touch-manipulation ${isFavorite ? "text-red-500 hover:text-red-600" : ""}`}
               >
                 <Heart
                   className={`h-5 w-5 sm:h-4 sm:w-4 ${isFavorite ? "fill-current" : ""}`}
@@ -93,9 +93,9 @@ export function MusicCard({
               variant="default"
               size="sm"
               onClick={() => onPlay(track)}
-              className="flex-shrink-0 text-xs sm:text-sm h-10 sm:h-9 px-3 sm:px-4 touch-manipulation"
+              className="flex-shrink-0 text-sm sm:text-sm h-11 sm:h-9 px-4 sm:px-4 touch-manipulation"
             >
-              <Play className="h-4 w-4 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+              <Play className="h-4 w-4 sm:h-4 sm:w-4 mr-2 sm:mr-2" />
               <span className="hidden sm:inline">Phát</span>
             </Button>
 
@@ -105,7 +105,7 @@ export function MusicCard({
                 size="sm"
                 onClick={() => onAddToQueue(track)}
                 title="Thêm vào hàng đợi"
-                className="h-10 w-10 sm:h-9 sm:w-24 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
+                className="h-11 w-11 sm:h-9 sm:w-24 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
               >
                 <ListMusic className="h-5 w-5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline ml-2">Hàng đợi</span>
@@ -118,7 +118,7 @@ export function MusicCard({
                 size="sm"
                 onClick={() => onAddToPlaylist(track)}
                 title="Thêm vào danh sách phát"
-                className="h-10 w-10 sm:h-9 sm:w-20 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
+                className="h-11 w-11 sm:h-9 sm:w-20 p-0 sm:px-3 flex-shrink-0 touch-manipulation"
               >
                 <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline ml-2">Thêm</span>
@@ -135,7 +135,7 @@ export function MusicCard({
                       e.stopPropagation();
                     }}
                     title="Tùy chọn"
-                    className="h-10 w-10 sm:h-9 sm:w-9 p-0 touch-manipulation"
+                    className="h-11 w-11 sm:h-9 sm:w-9 p-0 touch-manipulation"
                   >
                     <MoreVertical className="h-5 w-5 sm:h-4 sm:w-4" />
                   </Button>

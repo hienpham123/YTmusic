@@ -1,16 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
+
+interface PlayHistoryItem {
+  channel_name?: string;
+  mood?: string;
+  play_count?: number;
+  youtube_video_id: string;
+}
+
+interface PlaylistTrack {
+  youtube_video_id: string;
+  title: string;
+  thumbnail: string;
+  channel_name?: string;
+  duration?: string;
+  mood?: string;
+}
+
+interface PlaylistData {
+  tracks?: PlaylistTrack[];
+}
+
+interface RecommendationTrack {
+  youtubeVideoId: string;
+  title: string;
+  thumbnail: string;
+  channelName: string;
+  duration: string;
+  mood: string;
+  score: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "10");
-    const trackId = searchParams.get("trackId"); // Optional: get recommendations based on a specific track
+    // Optional: trackId for future use
+    // const trackId = searchParams.get("trackId");
 
-    // Get user's play history
+    // Get user's play history - filter by user_id
     const { data: playHistory, error: historyError } = await supabase
       .from("play_history")
       .select("*")
+      .eq("user_id", user.id)
       .order("played_at", { ascending: false })
       .limit(100);
 
@@ -22,21 +61,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // Get user's favorites
-    const { data: favorites, error: favoritesError } = await supabase
-      .from("favorites")
-      .select("*")
-      .limit(50);
+    // Get user's favorites - filter by user_id (for future use)
+    // const { data: favorites, error: favoritesError } = await supabase
+    //   .from("favorites")
+    //   .select("*")
+    //   .eq("user_id", user.id)
+    //   .limit(50);
 
-    if (favoritesError) {
-      console.error("Error fetching favorites:", favoritesError);
-    }
+    // if (favoritesError) {
+    //   console.error("Error fetching favorites:", favoritesError);
+    // }
 
     // Strategy 1: Based on most played tracks (similar artists/channels)
     const channelFrequency = new Map<string, number>();
     const moodFrequency = new Map<string, number>();
 
-    playHistory.forEach((item: any) => {
+    playHistory.forEach((item: PlayHistoryItem) => {
       const channel = item.channel_name || "";
       const mood = item.mood || "Unknown";
 
@@ -58,7 +98,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 3)
       .map(([mood]) => mood);
 
-    // Strategy 2: Get tracks from playlists that user has
+    // Strategy 2: Get tracks from playlists that user has - filter by user_id
     const { data: playlists, error: playlistsError } = await supabase
       .from("playlists")
       .select(
@@ -66,6 +106,7 @@ export async function GET(request: NextRequest) {
         tracks (*)
       `
       )
+      .eq("user_id", user.id)
       .limit(10);
 
     if (playlistsError) {
@@ -73,11 +114,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Collect all unique tracks from playlists
-    const playlistTracks = new Map<string, any>();
+    const playlistTracks = new Map<string, RecommendationTrack>();
     if (playlists) {
-      playlists.forEach((playlist: any) => {
+      playlists.forEach((playlist: PlaylistData) => {
         if (playlist.tracks && Array.isArray(playlist.tracks)) {
-          playlist.tracks.forEach((track: any) => {
+          playlist.tracks.forEach((track: PlaylistTrack) => {
             if (!playlistTracks.has(track.youtube_video_id)) {
               playlistTracks.set(track.youtube_video_id, {
                 youtubeVideoId: track.youtube_video_id,
@@ -95,11 +136,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Strategy 3: Get recently played tracks (for context)
-    const recentTracks = playHistory.slice(0, 10).map((item: any) => ({
-      youtubeVideoId: item.youtube_video_id,
-      channelName: item.channel_name || "",
-      mood: item.mood || "Unknown",
-    }));
+    const recentTracks = playHistory
+      .slice(0, 10)
+      .map((item: PlayHistoryItem) => ({
+        youtubeVideoId: item.youtube_video_id,
+        channelName: item.channel_name || "",
+        mood: item.mood || "Unknown",
+      }));
 
     // Build recommendations
     // For now, return tracks from playlists that match user preferences

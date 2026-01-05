@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
 
 // POST /api/tracks - Add a track to a playlist
 export async function POST(request: NextRequest) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       playlistId,
@@ -19,6 +26,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
+      );
+    }
+
+    // Verify user owns the playlist
+    const { data: playlist, error: playlistError } = await supabase
+      .from("playlists")
+      .select("id, user_id")
+      .eq("id", playlistId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (playlistError || !playlist) {
+      return NextResponse.json(
+        { error: "Playlist not found or access denied" },
+        { status: 404 }
       );
     }
 

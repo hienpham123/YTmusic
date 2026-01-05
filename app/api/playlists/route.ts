@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
 
 // GET /api/playlists - Get all playlists for current user
 export async function GET(request: NextRequest) {
   try {
-    // Get user from session (you'll need to implement auth)
-    const authHeader = request.headers.get("authorization");
-
-    if (!authHeader) {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // For now, we'll use a simple approach
-    // In production, verify JWT token from Supabase
+    // Filter by user_id
     const { data: playlists, error } = await supabase
       .from("playlists")
       .select(
@@ -21,6 +20,7 @@ export async function GET(request: NextRequest) {
         tracks (*)
       `
       )
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -43,22 +43,26 @@ export async function GET(request: NextRequest) {
 // POST /api/playlists - Create a new playlist
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, userId } = body;
-
-    if (!name || !userId) {
-      return NextResponse.json(
-        { error: "Name and userId are required" },
-        { status: 400 }
-      );
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const body = await request.json();
+    const { name } = body;
+
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    }
+
+    // Use authenticated user's ID, not from request body
     const { data: playlist, error } = await supabase
       .from("playlists")
       // @ts-expect-error - Supabase types are not fully generated for this table
       .insert({
         name,
-        user_id: userId,
+        user_id: user.id,
       })
       .select()
       .single();

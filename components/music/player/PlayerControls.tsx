@@ -49,27 +49,27 @@ export function PlayerControls({
 }: PlayerControlsProps) {
   if (isMobile) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={onPrevious}
           disabled={!hasPrevious && repeatMode === "off"}
-          className="h-10 w-10 touch-manipulation"
+          className="h-12 w-12 touch-manipulation"
         >
-          <SkipBack className="h-5 w-5" />
+          <SkipBack className="h-6 w-6" />
         </Button>
         <Button
           variant="default"
           size="icon"
-          className="h-11 w-11 rounded-full touch-manipulation"
+          className="h-14 w-14 rounded-full touch-manipulation shadow-lg"
           onClick={isPlaying ? onPause : onPlay}
           title={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
-            <Pause className="h-5 w-5 fill-current" />
+            <Pause className="h-6 w-6 fill-current" />
           ) : (
-            <Play className="h-5 w-5 fill-current" />
+            <Play className="h-6 w-6 fill-current" />
           )}
         </Button>
         <Button
@@ -77,9 +77,9 @@ export function PlayerControls({
           size="icon"
           onClick={onNext}
           disabled={!hasNext && repeatMode === "off"}
-          className="h-10 w-10 touch-manipulation"
+          className="h-12 w-12 touch-manipulation"
         >
-          <SkipForward className="h-5 w-5" />
+          <SkipForward className="h-6 w-6" />
         </Button>
       </div>
     );

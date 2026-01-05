@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
-//@typescript-eslint.io/rules/no-explicit-any
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
+
 // GET /api/playlists/[id] - Get a specific playlist
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const { data: playlist, error } = await supabase
       .from("playlists")
@@ -17,9 +24,16 @@ export async function GET(
       `
       )
       .eq("id", id)
+      .eq("user_id", user.id) // Ensure user owns this playlist
       .single();
 
     if (error) {
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Playlist not found" },
+          { status: 404 }
+        );
+      }
       throw error;
     }
 
@@ -49,6 +63,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { name } = body;
@@ -57,12 +77,28 @@ export async function PUT(
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
+    // First check if playlist exists and user owns it
+    const { data: existingPlaylist, error: checkError } = await supabase
+      .from("playlists")
+      .select("id, user_id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (checkError || !existingPlaylist) {
+      return NextResponse.json(
+        { error: "Playlist not found" },
+        { status: 404 }
+      );
+    }
+
     const updateData = { name };
     const { data: playlist, error } = await supabase
       .from("playlists")
       // @ts-expect-error - Supabase types are not fully generated for this table
       .update(updateData)
       .eq("id", id)
+      .eq("user_id", user.id) // Ensure user owns this playlist
       .select()
       .single();
 
@@ -89,7 +125,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // First check if playlist exists and user owns it
+    const { data: existingPlaylist, error: checkError } = await supabase
+      .from("playlists")
+      .select("id, user_id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (checkError || !existingPlaylist) {
+      return NextResponse.json(
+        { error: "Playlist not found" },
+        { status: 404 }
+      );
+    }
 
     // First, delete all tracks in this playlist
     const { error: tracksError } = await supabase
@@ -102,8 +159,12 @@ export async function DELETE(
       throw tracksError;
     }
 
-    // Then delete the playlist
-    const { error } = await supabase.from("playlists").delete().eq("id", id);
+    // Then delete the playlist (with user_id check for extra security)
+    const { error } = await supabase
+      .from("playlists")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       throw error;

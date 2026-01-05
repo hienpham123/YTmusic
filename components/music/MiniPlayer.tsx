@@ -141,26 +141,28 @@ export function MiniPlayer({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md touch-none"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md touch-none safe-area-bottom"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div className="hidden">
           <div ref={playerRef} />
         </div>
-        <div className="mx-auto max-w-7xl px-2 sm:px-4 py-2 sm:py-3">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 py-3 sm:py-3">
           {/* Mobile Layout */}
           <div className="block sm:hidden">
             {/* Progress Bar - Top on Mobile */}
-            <ProgressBar
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={onSeek}
-              isMobile
-            />
+            <div className="mb-3">
+              <ProgressBar
+                currentTime={currentTime}
+                duration={duration}
+                onSeek={onSeek}
+                isMobile
+              />
+            </div>
 
             {/* Track Info Row */}
-            <div className="mb-2">
+            <div className="mb-3">
               <PlayerInfo
                 track={track}
                 isFavorite={isFavorite}
@@ -170,7 +172,7 @@ export function MiniPlayer({
             </div>
 
             {/* Controls Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <PlayerControls
                 isPlaying={isPlaying}
                 hasNext={hasNext}
@@ -183,7 +185,7 @@ export function MiniPlayer({
                 isMobile
               />
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-shrink-0">
                 <span>{formatTime(currentTime)}</span>
                 <span>/</span>
                 <span>{formatTime(duration)}</span>
@@ -210,7 +212,7 @@ export function MiniPlayer({
                     variant="ghost"
                     size="icon"
                     onClick={onToggleRepeat}
-                    className={`h-10 w-10 touch-manipulation ${repeatMode !== "off" ? "text-primary" : ""}`}
+                    className={`h-11 w-11 touch-manipulation ${repeatMode !== "off" ? "text-primary" : ""}`}
                   >
                     {repeatMode === "one" ? (
                       <Repeat1 className="h-5 w-5" />

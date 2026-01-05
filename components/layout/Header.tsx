@@ -66,21 +66,24 @@ export function Header() {
 
   return (
     <>
-      <header className="border-b border-border bg-card/80 backdrop-blur-md fixed top-0 left-0 right-0 z-40">
-        <div className="flex items-center h-14 px-4 gap-4">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md fixed top-0 left-0 right-0 z-40 safe-area-top">
+        <div className="flex items-center h-14 sm:h-16 px-3 sm:px-4 gap-2 sm:gap-4">
           {/* Left: Menu + Logo */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={handleMenuClick}
-              className="h-10 w-10"
+              className="h-11 w-11 sm:h-10 sm:w-10 touch-manipulation -ml-1 sm:ml-0"
               title={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 sm:h-5 sm:w-5" />
             </Button>
-            <Link href="/" className="flex items-center gap-2 min-w-0">
-              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent whitespace-nowrap">
+            <Link
+              href="/"
+              className="flex items-center gap-2 min-w-0 touch-manipulation"
+            >
+              <span className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent whitespace-nowrap">
                 🎧 YT Music
               </span>
             </Link>
@@ -128,7 +131,7 @@ export function Header() {
                   searchInputRef.current?.focus();
                 }, 100);
               }}
-              className="h-10 w-10"
+              className="h-11 w-11 touch-manipulation"
               title="Tìm kiếm"
             >
               <Search className="h-5 w-5" />
@@ -161,11 +164,11 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: -256 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r border-border z-50 md:hidden"
+              className="fixed left-0 top-0 bottom-0 w-72 sm:w-64 bg-card border-r border-border z-50 md:hidden safe-area-left"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header with close button */}
-              <div className="flex items-center justify-between px-4 h-14 border-b border-border">
+              <div className="flex items-center justify-between px-4 h-14 sm:h-16 border-b border-border">
                 <div className="flex items-center gap-2">
                   <Image
                     src="/icon.svg"
@@ -179,14 +182,14 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="h-8 w-8"
+                  className="h-10 w-10 touch-manipulation"
                 >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
               {/* Navigation */}
-              <nav className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto px-3 space-y-1">
+              <nav className="flex-1 flex flex-col pt-4 pb-4 overflow-y-auto px-3 space-y-1">
                 {[
                   { name: "Khám Phá", href: "/", icon: Home },
                   { name: "Thư Viện", href: "/library", icon: Library },
@@ -207,18 +210,18 @@ export function Header() {
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
                         className={cn(
-                          "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                          "group flex items-center px-4 py-3.5 text-base font-medium rounded-lg transition-colors touch-manipulation min-h-[48px]",
                           isActive
                             ? "bg-primary/10 text-primary border-l-2 border-primary"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            : "text-muted-foreground active:bg-accent active:text-foreground"
                         )}
                       >
                         <item.icon
                           className={cn(
-                            "mr-3 h-5 w-5 flex-shrink-0",
+                            "mr-4 h-6 w-6 flex-shrink-0",
                             isActive
                               ? "text-primary"
-                              : "text-muted-foreground group-hover:text-foreground"
+                              : "text-muted-foreground group-active:text-foreground"
                           )}
                         />
                         {item.name}
@@ -251,7 +254,7 @@ export function Header() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -100, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 right-0 z-50 md:hidden bg-card border-b border-border p-4"
+              className="fixed top-0 left-0 right-0 z-50 md:hidden bg-card border-b border-border p-4 safe-area-top"
               onClick={(e) => e.stopPropagation()}
             >
               <form
@@ -270,13 +273,13 @@ export function Header() {
                     setShowSearchResults(e.target.value.trim().length > 0);
                   }}
                   placeholder="Tìm kiếm video YouTube..."
-                  className="flex-1 h-11"
+                  className="flex-1 h-12 text-base"
                   autoFocus
                 />
                 <Button
                   type="submit"
                   size="icon"
-                  className="h-11 w-11 flex-shrink-0"
+                  className="h-12 w-12 flex-shrink-0 touch-manipulation"
                 >
                   <Search className="h-5 w-5" />
                 </Button>
@@ -289,7 +292,7 @@ export function Header() {
                     setSearchQuery("");
                     setShowSearchResults(false);
                   }}
-                  className="h-11 w-11 flex-shrink-0"
+                  className="h-12 w-12 flex-shrink-0 touch-manipulation"
                 >
                   <X className="h-5 w-5" />
                 </Button>

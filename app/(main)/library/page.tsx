@@ -30,7 +30,6 @@ export default function LibraryPage() {
     playlists,
     currentPlaylist,
     setCurrentPlaylist,
-    createPlaylist,
     reorderTracks,
     isLoading: isLoadingPlaylists,
   } = usePlaylist();
@@ -43,7 +42,7 @@ export default function LibraryPage() {
       ? currentPlaylist.tracks.length
       : Math.min(4, currentPlaylist.tracks.length);
     return currentPlaylist.tracks.slice(0, count);
-  }, [currentPlaylist?.tracks, showAllTracks]);
+  }, [currentPlaylist, showAllTracks]);
 
   const handlePlay = (track: Track) => {
     const sourceTracks = currentPlaylist?.tracks || [];
@@ -82,7 +81,7 @@ export default function LibraryPage() {
             </div>
             <button
               onClick={() => setShowStatistics(!showStatistics)}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-border bg-background hover:bg-accent transition-colors"
+              className="px-4 py-2.5 text-sm font-medium rounded-lg border border-border bg-background active:bg-accent transition-colors touch-manipulation"
             >
               {showStatistics ? "Ẩn thống kê" : "Xem thống kê"}
             </button>

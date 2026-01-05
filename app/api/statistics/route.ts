@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
+
+interface PlayHistoryItem {
+  youtube_video_id: string;
+  title: string;
+  thumbnail: string;
+  channel_name?: string;
+  duration?: string;
+  mood?: string;
+  play_count?: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const period = searchParams.get("period") || "all"; // all, week, month
 
@@ -14,8 +31,11 @@ export async function GET(request: NextRequest) {
       dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Get all play history
-    let query = supabase.from("play_history").select("*");
+    // Get user's play history - filter by user_id
+    let query = supabase
+      .from("play_history")
+      .select("*")
+      .eq("user_id", user.id);
 
     if (dateFrom) {
       query = query.gte("played_at", dateFrom.toISOString());
@@ -50,7 +70,7 @@ export async function GET(request: NextRequest) {
       }
     >();
 
-    allHistory.forEach((item: any) => {
+    allHistory.forEach((item: PlayHistoryItem) => {
       const key = item.youtube_video_id;
       const existing = trackMap.get(key);
       const playCount = item.play_count || 1;
