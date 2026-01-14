@@ -10,6 +10,8 @@ import {
   Repeat1,
   Shuffle,
   Sparkles,
+  Rewind,
+  FastForward,
 } from "lucide-react";
 
 type RepeatMode = "off" | "one" | "all";
@@ -25,6 +27,8 @@ interface PlayerControlsProps {
   onPause: () => void;
   onNext: () => void;
   onPrevious: () => void;
+  onSeekForward?: () => void;
+  onSeekBackward?: () => void;
   onToggleRepeat?: () => void;
   onToggleShuffle?: () => void;
   onToggleAutoQueue?: () => void;
@@ -42,6 +46,8 @@ export function PlayerControls({
   onPause,
   onNext,
   onPrevious,
+  onSeekForward,
+  onSeekBackward,
   onToggleRepeat,
   onToggleShuffle,
   onToggleAutoQueue,
@@ -50,6 +56,17 @@ export function PlayerControls({
   if (isMobile) {
     return (
       <div className="flex items-center gap-2">
+        {onSeekBackward && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSeekBackward}
+            className="h-10 w-10 touch-manipulation"
+            title="Quay lại 10s"
+          >
+            <Rewind className="h-5 w-5" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -81,6 +98,17 @@ export function PlayerControls({
         >
           <SkipForward className="h-6 w-6" />
         </Button>
+        {onSeekForward && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSeekForward}
+            className="h-10 w-10 touch-manipulation"
+            title="Tua nhanh 10s"
+          >
+            <FastForward className="h-5 w-5" />
+          </Button>
+        )}
       </div>
     );
   }
@@ -96,6 +124,17 @@ export function PlayerControls({
           title="Shuffle"
         >
           <Shuffle className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
+      )}
+      {onSeekBackward && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onSeekBackward}
+          className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
+          title="Quay lại 10s"
+        >
+          <Rewind className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       )}
       <Button
@@ -131,6 +170,17 @@ export function PlayerControls({
       >
         <SkipForward className="h-4 w-4 sm:h-5 sm:w-5" />
       </Button>
+      {onSeekForward && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onSeekForward}
+          className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
+          title="Tua nhanh 10s"
+        >
+          <FastForward className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
+      )}
       {onToggleRepeat && (
         <Button
           variant="ghost"

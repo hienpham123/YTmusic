@@ -30,14 +30,19 @@ function HomePageContent() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Khám Phá</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Hero Section */}
+        <div className="mb-8 sm:mb-12 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Khám Phá
+          </h1>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Tìm kiếm và khám phá nhạc mới từ YouTube
           </p>
         </div>
+
+        {/* Search Section */}
         <YouTubeSearchSection
           onSelectTrack={handlePlay}
           onAddToPlaylist={handleAddToPlaylist}
@@ -54,11 +59,13 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen">
-          <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Khám Phá</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
+        <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+            <div className="mb-8 sm:mb-12 text-center">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Khám Phá
+              </h1>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Tìm kiếm và khám phá nhạc mới từ YouTube
               </p>
             </div>

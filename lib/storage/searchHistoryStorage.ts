@@ -34,4 +34,10 @@ export const searchHistoryStorage = {
   clear: (): void => {
     localStorage.removeItem(STORAGE_KEY);
   },
+
+  remove: (query: string): void => {
+    const history = searchHistoryStorage.getAll();
+    const newHistory = history.filter((q) => q !== query.trim());
+    searchHistoryStorage.save(newHistory);
+  },
 };

@@ -45,12 +45,12 @@ export function SearchResults({
 
   if (isLoading) {
     return (
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4">
-          <Skeleton className="h-6 w-48" />
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <Skeleton className="h-8 w-48" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
             <MusicCardSkeleton key={i} />
           ))}
         </div>
@@ -63,22 +63,25 @@ export function SearchResults({
   }
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4">
-        <h4 className="font-semibold">
-          Kết quả tìm kiếm ({searchResults.length})
-        </h4>
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold">
+          Kết quả tìm kiếm
+          <span className="text-muted-foreground font-normal ml-2">
+            ({searchResults.length})
+          </span>
+        </h2>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClearResults}
-          className="self-start sm:self-auto h-9 sm:h-8 px-3 touch-manipulation"
+          className="self-start sm:self-auto h-9 sm:h-9 px-4 touch-manipulation hover:bg-destructive/10 hover:text-destructive transition-colors"
         >
-          <X className="h-4 w-4 mr-1" />
-          Xóa
+          <X className="h-4 w-4 mr-2" />
+          Xóa kết quả
         </Button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {searchResults.map((metadata) => {
           const track = convertToTrack(metadata);
           return (

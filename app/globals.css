@@ -151,4 +151,119 @@
   * {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Improve touch response on mobile */
+  button,
+  [role="button"],
+  [onclick],
+  .cursor-pointer {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Remove transition delays on mobile for better responsiveness */
+  button:active,
+  [role="button"]:active,
+  .cursor-pointer:active {
+    transition: none;
+  }
+}
+
+/* Custom Scrollbar Styles */
+/* WebKit browsers (Chrome, Safari, Edge) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.5 0 0 / 30%) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: oklch(0.5 0 0 / 30%);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.2s ease;
+  min-height: 20px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.65 0 0 / 60%);
+  background-clip: padding-box;
+  width: 10px;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: oklch(0.75 0 0 / 75%);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark mode scrollbar - more visible and modern */
+.dark * {
+  scrollbar-color: oklch(0.65 0 0 / 50%) transparent;
+}
+
+.dark *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: oklch(0.65 0 0 / 50%);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.75 0 0 / 70%);
+  background-clip: padding-box;
+  width: 10px;
+}
+
+.dark *::-webkit-scrollbar-thumb:active {
+  background: oklch(0.85 0 0 / 85%);
+  background-clip: padding-box;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.5 0 0 / 30%) transparent;
+}
+
+.dark * {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.65 0 0 / 50%) transparent;
+}
+
+/* Smooth scrollbar animation on scroll */
+@supports (scrollbar-width: thin) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Enhanced scrollbar for main content area */
+main *::-webkit-scrollbar,
+main::-webkit-scrollbar {
+  width: 10px;
+}
+
+main *::-webkit-scrollbar-thumb:hover,
+main::-webkit-scrollbar-thumb:hover {
+  width: 12px;
 }

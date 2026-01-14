@@ -8,6 +8,7 @@ import { SearchHistoryDropdown } from "@/components/search/SearchHistoryDropdown
 import { SearchResults } from "@/components/search/SearchResults";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
+import { useYouTubeSuggestions } from "@/hooks/useYouTubeSuggestions";
 
 interface YouTubeSearchProps {
   onSelectTrack: (track: Track) => void;
@@ -32,7 +33,7 @@ export function YouTubeSearch({
   const isInitialQueryRef = useRef(false);
   const lastSearchedQueryRef = useRef<string | null>(null);
 
-  const { searchHistory, addToHistory, clearHistory } = useSearchHistory();
+  const { searchHistory, addToHistory, removeFromHistory } = useSearchHistory();
   const {
     searchResults,
     isSearching,
@@ -43,6 +44,14 @@ export function YouTubeSearch({
     setSearchResults,
     setIsSearching,
   } = useYouTubeSearch();
+
+  // Get YouTube suggestions when user is typing
+  const { suggestions: youtubeSuggestions, isLoading: isLoadingSuggestions } =
+    useYouTubeSuggestions({
+      query: searchQuery,
+      enabled: showSuggestions && searchQuery.trim().length > 0,
+      debounceMs: 300,
+    });
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -89,75 +98,16 @@ export function YouTubeSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery]);
 
-  // Handle search input with debounce (skip if this is initial query)
-  useEffect(() => {
+  // Handle manual search (when user clicks search button or presses Enter)
+  const handleSearch = () => {
     const trimmedQuery = searchQuery.trim();
 
-    // Skip if this is the initial query being set
-    if (isInitialQueryRef.current) {
-      return;
-    }
-
-    // Skip if this query was just searched (to avoid duplicate)
-    if (lastSearchedQueryRef.current === trimmedQuery && trimmedQuery) {
-      return;
-    }
-
-    // Skip if searchQuery matches initialQuery (to avoid duplicate)
-    if (
-      initialQuery &&
-      trimmedQuery === initialQuery.trim() &&
-      initialQueryProcessedRef.current
-    ) {
-      return;
-    }
-
-    // Clear previous timeout whenever searchQuery changes
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-      searchTimeoutRef.current = null;
-    }
-
-    // If search query is empty, clear results
+    // Skip if empty
     if (!trimmedQuery) {
-      setSearchResults([]);
-      setIsSearching(false);
-      setError(null);
-      lastSearchedQueryRef.current = null;
       return;
     }
 
-    // Don't set loading state yet - wait for debounce
-    setError(null);
-
-    // Debounce search - wait 1500ms (1.5 seconds) after user stops typing
-    searchTimeoutRef.current = setTimeout(() => {
-      // Triple check before calling
-      if (
-        !isInitialQueryRef.current &&
-        trimmedQuery &&
-        lastSearchedQueryRef.current !== trimmedQuery
-      ) {
-        lastSearchedQueryRef.current = trimmedQuery;
-        performSearch(trimmedQuery, addToHistory);
-      }
-    }, 1500);
-
-    // Cleanup function - clear timeout if component unmounts or query changes
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-        searchTimeoutRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
-
-  // Handle search from history
-  const handleHistoryClick = (query: string) => {
-    const trimmedQuery = query.trim();
-
-    // Skip if same query
+    // Skip if same query was just searched
     if (lastSearchedQueryRef.current === trimmedQuery) {
       return;
     }
@@ -168,10 +118,53 @@ export function YouTubeSearch({
       searchTimeoutRef.current = null;
     }
 
+    // Perform search
     lastSearchedQueryRef.current = trimmedQuery;
-    setSearchQuery(trimmedQuery);
     performSearch(trimmedQuery, addToHistory);
     setShowSuggestions(false);
+
+    // Remove focus from input
+    if (searchContainerRef.current) {
+      const input = searchContainerRef.current.querySelector("input");
+      if (input) {
+        input.blur();
+      }
+    }
+  };
+
+  // Clear results when query is cleared
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      setError(null);
+      lastSearchedQueryRef.current = null;
+    }
+  }, [searchQuery, setSearchResults, setIsSearching, setError]);
+
+  // Handle search from history or suggestions
+  const handleHistoryClick = (query: string) => {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      return;
+    }
+
+    // Clear any pending timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
+
+    // Update query first
+    setSearchQuery(trimmedQuery);
+
+    // Always perform search, even if it's the same query
+    // This allows users to refresh results or re-search
+    lastSearchedQueryRef.current = trimmedQuery;
+    performSearch(trimmedQuery, addToHistory);
+    setShowSuggestions(false);
+
     // Remove focus from input
     if (searchContainerRef.current) {
       const input = searchContainerRef.current.querySelector("input");
@@ -188,26 +181,37 @@ export function YouTubeSearch({
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-6 sm:space-y-8">
       <div className="relative" ref={searchContainerRef}>
         <div onClick={(e) => e.stopPropagation()}>
           <SearchBar
             value={searchQuery}
             onChange={(value) => {
               setSearchQuery(value);
-            }}
-            onFocus={() => {
-              // Show suggestions when input is focused and we have history
-              if (searchHistory.length > 0) {
+              // Show suggestions when typing
+              if (value.trim().length > 0 || searchHistory.length > 0) {
                 setShowSuggestions(true);
               }
             }}
-            onBlur={() => {
-              // Delay hiding to allow mousedown events on suggestions
-              // The delay ensures click events on dropdown items work
-              setTimeout(() => {
+            onSearch={handleSearch}
+            onFocus={() => {
+              // Show suggestions when input is focused
+              if (searchQuery.trim().length > 0 || searchHistory.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            onBlur={(e) => {
+              // Only delay on desktop, immediate on mobile
+              const isMobile = window.innerWidth < 640;
+              if (isMobile) {
+                // On mobile, close immediately to avoid blocking clicks
                 setShowSuggestions(false);
-              }, 150);
+              } else {
+                // Delay hiding to allow mousedown events on suggestions (desktop)
+                setTimeout(() => {
+                  setShowSuggestions(false);
+                }, 150);
+              }
             }}
             placeholder="Tìm kiếm video YouTube..."
             className="w-full"
@@ -224,8 +228,10 @@ export function YouTubeSearch({
           searchHistory={searchHistory}
           searchQuery={searchQuery}
           onSelectQuery={handleHistoryClick}
-          onClearHistory={clearHistory}
+          onRemoveFromHistory={removeFromHistory}
           showSuggestions={showSuggestions && !isSearching}
+          youtubeSuggestions={youtubeSuggestions}
+          isLoadingSuggestions={isLoadingSuggestions}
         />
       </div>
 
@@ -246,9 +252,30 @@ export function YouTubeSearch({
         searchQuery.trim() &&
         searchResults.length === 0 &&
         !error && (
-          <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-            <p>Không tìm thấy video nào</p>
-            <p className="text-sm mt-2">Thử tìm kiếm với từ khóa khác</p>
+          <div className="text-center py-16 sm:py-20 px-4">
+            <div className="max-w-md mx-auto">
+              <div className="mb-4">
+                <svg
+                  className="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-muted-foreground/50"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                Không tìm thấy video nào
+              </h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Thử tìm kiếm với từ khóa khác hoặc kiểm tra lại chính tả
+              </p>
+            </div>
           </div>
         )}
     </div>

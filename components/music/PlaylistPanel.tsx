@@ -53,30 +53,38 @@ export function PlaylistPanel({
               ? formatDuration(parseDurationToSeconds(track.duration))
               : null;
 
+        const handlePlay = (e: React.MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPlayTrack(track);
+        };
+
         return (
           <div
             key={track.id}
-            className={`group flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer ${
+            className={`group flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer touch-manipulation ${
               isPlaying
                 ? "bg-primary/10 hover:bg-primary/15"
                 : "hover:bg-accent/50"
             }`}
-            onClick={() => onPlayTrack(track)}
+            onClick={handlePlay}
           >
-            {/* Play Icon or Index */}
+            {/* Play Icon or Index - Always visible on mobile, hover on desktop */}
             <div className="flex-shrink-0 w-5 flex items-center justify-center">
               {isPlaying ? (
                 <Play className="h-3 w-3 text-primary fill-primary" />
               ) : (
-                <span className="text-[10px] text-muted-foreground group-hover:hidden">
-                  {index + 1}
-                </span>
+                <>
+                  <span className="text-[10px] text-muted-foreground hidden sm:block sm:group-hover:hidden">
+                    {index + 1}
+                  </span>
+                  <Play
+                    className={`h-3 w-3 text-muted-foreground block sm:hidden sm:group-hover:block ${
+                      isPlaying ? "hidden" : ""
+                    }`}
+                  />
+                </>
               )}
-              <Play
-                className={`h-3 w-3 text-muted-foreground hidden group-hover:block ${
-                  isPlaying ? "hidden" : ""
-                }`}
-              />
             </div>
 
             {/* Thumbnail */}
@@ -122,7 +130,7 @@ export function PlaylistPanel({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
+                  className="h-7 w-7 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
                   onClick={(e) => {
                     e.stopPropagation();
                     onRemoveTrack(track.id);

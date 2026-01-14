@@ -31,6 +31,8 @@ interface MiniPlayerProps {
   onNext: () => void;
   onPrevious: () => void;
   onSeek: (seconds: number) => void;
+  onSeekForward?: () => void;
+  onSeekBackward?: () => void;
   onVideoEnd: () => void;
   hasNext: boolean;
   hasPrevious: boolean;
@@ -59,6 +61,8 @@ export function MiniPlayer({
   onNext,
   onPrevious,
   onSeek,
+  onSeekForward,
+  onSeekBackward,
   onVideoEnd,
   hasNext,
   hasPrevious,
@@ -182,6 +186,8 @@ export function MiniPlayer({
                 onPause={onPause}
                 onNext={onNext}
                 onPrevious={onPrevious}
+                onSeekForward={onSeekForward}
+                onSeekBackward={onSeekBackward}
                 isMobile
               />
 
@@ -248,6 +254,8 @@ export function MiniPlayer({
                   onPause={onPause}
                   onNext={onNext}
                   onPrevious={onPrevious}
+                  onSeekForward={onSeekForward}
+                  onSeekBackward={onSeekBackward}
                   onToggleRepeat={onToggleRepeat}
                   onToggleShuffle={onToggleShuffle}
                 />

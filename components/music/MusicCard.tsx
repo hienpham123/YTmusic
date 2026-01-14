@@ -58,8 +58,12 @@ export function MusicCard({
           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 active:bg-black/30 transition-colors flex items-center justify-center">
             <Button
               size="icon"
-              className="opacity-0 hover:opacity-100 active:opacity-100 sm:active:opacity-100 transition-opacity rounded-full h-16 w-16 sm:h-12 sm:w-12 touch-manipulation"
-              onClick={() => onPlay(track)}
+              className="opacity-100 sm:opacity-0 sm:hover:opacity-100 transition-opacity rounded-full h-16 w-16 sm:h-12 sm:w-12 touch-manipulation"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPlay(track);
+              }}
             >
               <Play className="h-8 w-8 sm:h-6 sm:w-6 fill-current" />
             </Button>
@@ -92,7 +96,11 @@ export function MusicCard({
             <Button
               variant="default"
               size="sm"
-              onClick={() => onPlay(track)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPlay(track);
+              }}
               className="flex-shrink-0 text-sm sm:text-sm h-11 sm:h-9 px-4 sm:px-4 touch-manipulation"
             >
               <Play className="h-4 w-4 sm:h-4 sm:w-4 mr-2 sm:mr-2" />

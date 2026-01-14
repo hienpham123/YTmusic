@@ -44,7 +44,7 @@ export function SortableQueueTrackItem({
         <button
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 p-1 cursor-grab active:cursor-grabbing touch-none opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground z-10"
+          className="flex-shrink-0 p-1 cursor-grab active:cursor-grabbing touch-none opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground z-10"
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-4 w-4" />

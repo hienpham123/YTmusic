@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { usePlayerState } from "./player/usePlayerState";
 import { useLoadPlayer } from "./player/useLoadPlayer";
 import { usePlayerControls } from "./player/usePlayerControls";
@@ -148,6 +148,19 @@ export function usePlayer() {
     setCurrentTime: state.setCurrentTime,
   });
 
+  // Seek forward/backward helpers
+  const seekForward = useCallback(() => {
+    if (state.currentTrack && state.currentTime < state.duration - 10) {
+      controls.seekTo(Math.min(state.currentTime + 10, state.duration));
+    }
+  }, [state.currentTrack, state.currentTime, state.duration, controls]);
+
+  const seekBackward = useCallback(() => {
+    if (state.currentTrack && state.currentTime > 10) {
+      controls.seekTo(Math.max(state.currentTime - 10, 0));
+    }
+  }, [state.currentTrack, state.currentTime, controls]);
+
   // Media Session API
   useMediaSession({
     currentTrack: state.currentTrack,
@@ -158,6 +171,8 @@ export function usePlayer() {
     onPause: controls.pause,
     onNext: queue.next,
     onPrevious: queue.previous,
+    onSeekForward: seekForward,
+    onSeekBackward: seekBackward,
   });
 
   return {

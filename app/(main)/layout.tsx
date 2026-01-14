@@ -258,6 +258,16 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
         onNext={next}
         onPrevious={previous}
         onSeek={seekTo}
+        onSeekForward={() => {
+          if (currentTrack && currentTime < duration - 10) {
+            seekTo(Math.min(currentTime + 10, duration));
+          }
+        }}
+        onSeekBackward={() => {
+          if (currentTrack && currentTime > 10) {
+            seekTo(Math.max(currentTime - 10, 0));
+          }
+        }}
         onVideoEnd={handleVideoEnd}
         hasNext={hasNext}
         hasPrevious={hasPrevious}

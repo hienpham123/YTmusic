@@ -19,8 +19,8 @@ export function YouTubeSearchSection({
   initialQuery,
 }: YouTubeSearchSectionProps) {
   return (
-    <section className="flex flex-col items-center justify-center min-h-[30vh] space-y-6 mb-12">
-      <div className="w-full max-w-2xl">
+    <section className="flex flex-col items-center justify-center w-full">
+      <div className="w-full max-w-4xl">
         <YouTubeSearch
           onSelectTrack={onSelectTrack}
           onAddToPlaylist={onAddToPlaylist}

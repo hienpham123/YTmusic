@@ -27,9 +27,15 @@ export function useSearchHistory() {
     setSearchHistory([]);
   }, []);
 
+  const removeFromHistory = useCallback((query: string) => {
+    searchHistoryStorage.remove(query);
+    setSearchHistory(searchHistoryStorage.getAll());
+  }, []);
+
   return {
     searchHistory,
     addToHistory,
     clearHistory,
+    removeFromHistory,
   };
 }
