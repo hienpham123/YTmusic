@@ -9,7 +9,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
   onSearch?: () => void;
   onFocus?: () => void;
-  onBlur?: () => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   placeholder?: string;
   className?: string;
 }

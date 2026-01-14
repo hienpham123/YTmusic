@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
 import { getUserFromRequest } from "@/lib/supabase/getUserFromRequest";
+import { SupabaseTrack } from "@/types/supabase";
 
 // DELETE /api/tracks/[id] - Remove a track from playlist
 export async function DELETE(
@@ -21,9 +22,9 @@ export async function DELETE(
       .from("tracks")
       .select("playlist_id")
       .eq("id", id)
-      .single();
+      .single<Pick<SupabaseTrack, "playlist_id">>();
 
-    if (trackError || !track) {
+    if (trackError || !track || !track.playlist_id) {
       return NextResponse.json({ error: "Track not found" }, { status: 404 });
     }
 
