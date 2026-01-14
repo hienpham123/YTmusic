@@ -55,16 +55,16 @@ export function PlayerControls({
 }: PlayerControlsProps) {
   if (isMobile) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {onSeekBackward && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onSeekBackward}
-            className="h-10 w-10 touch-manipulation"
+            className="h-9 w-9 touch-manipulation"
             title="Quay lại 10s"
           >
-            <Rewind className="h-5 w-5" />
+            <Rewind className="h-4 w-4" />
           </Button>
         )}
         <Button
@@ -72,21 +72,21 @@ export function PlayerControls({
           size="icon"
           onClick={onPrevious}
           disabled={!hasPrevious && repeatMode === "off"}
-          className="h-12 w-12 touch-manipulation"
+          className="h-11 w-11 touch-manipulation"
         >
-          <SkipBack className="h-6 w-6" />
+          <SkipBack className="h-5 w-5" />
         </Button>
         <Button
           variant="default"
           size="icon"
-          className="h-14 w-14 rounded-full touch-manipulation shadow-lg"
+          className="h-12 w-12 rounded-full touch-manipulation shadow-lg"
           onClick={isPlaying ? onPause : onPlay}
-          title={isPlaying ? "Pause" : "Play"}
+          title={isPlaying ? "Tạm dừng" : "Phát"}
         >
           {isPlaying ? (
-            <Pause className="h-6 w-6 fill-current" />
+            <Pause className="h-5 w-5 fill-current" />
           ) : (
-            <Play className="h-6 w-6 fill-current" />
+            <Play className="h-5 w-5 fill-current" />
           )}
         </Button>
         <Button
@@ -94,19 +94,19 @@ export function PlayerControls({
           size="icon"
           onClick={onNext}
           disabled={!hasNext && repeatMode === "off"}
-          className="h-12 w-12 touch-manipulation"
+          className="h-11 w-11 touch-manipulation"
         >
-          <SkipForward className="h-6 w-6" />
+          <SkipForward className="h-5 w-5" />
         </Button>
         {onSeekForward && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onSeekForward}
-            className="h-10 w-10 touch-manipulation"
+            className="h-9 w-9 touch-manipulation"
             title="Tua nhanh 10s"
           >
-            <FastForward className="h-5 w-5" />
+            <FastForward className="h-4 w-4" />
           </Button>
         )}
       </div>

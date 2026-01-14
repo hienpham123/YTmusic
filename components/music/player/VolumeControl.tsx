@@ -24,13 +24,13 @@ export function VolumeControl({
         variant="ghost"
         size="icon"
         onClick={onToggleMute}
-        className="h-10 w-10 touch-manipulation"
-        title={isMuted ? "Unmute" : "Mute"}
+        className="h-9 w-9 touch-manipulation"
+        title={isMuted ? "Bật tiếng" : "Tắt tiếng"}
       >
         {isMuted || volume === 0 ? (
-          <VolumeX className="h-5 w-5" />
+          <VolumeX className="h-4 w-4" />
         ) : (
-          <Volume2 className="h-5 w-5" />
+          <Volume2 className="h-4 w-4" />
         )}
       </Button>
     );

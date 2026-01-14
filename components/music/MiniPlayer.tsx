@@ -176,7 +176,7 @@ export function MiniPlayer({
             </div>
 
             {/* Controls Row */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-1">
               <PlayerControls
                 isPlaying={isPlaying}
                 hasNext={hasNext}
@@ -191,18 +191,33 @@ export function MiniPlayer({
                 isMobile
               />
 
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-shrink-0">
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground flex-shrink-0 min-w-[60px]">
                 <span>{formatTime(currentTime)}</span>
                 <span>/</span>
                 <span>{formatTime(duration)}</span>
               </div>
 
-              <div className="flex items-center gap-1">
-                {onSpeedChange && (
-                  <SpeedControl
-                    playbackSpeed={playbackSpeed}
-                    onSpeedChange={onSpeedChange}
-                  />
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                {onToggleRepeat && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onToggleRepeat}
+                    className={`h-9 w-9 touch-manipulation ${repeatMode !== "off" ? "text-primary" : ""}`}
+                    title={
+                      repeatMode === "one"
+                        ? "Lặp lại một bài"
+                        : repeatMode === "all"
+                          ? "Lặp lại tất cả"
+                          : "Tắt lặp lại"
+                    }
+                  >
+                    {repeatMode === "one" ? (
+                      <Repeat1 className="h-4 w-4" />
+                    ) : (
+                      <Repeat className="h-4 w-4" />
+                    )}
+                  </Button>
                 )}
                 {onToggleMute && onVolumeChange && (
                   <VolumeControl
@@ -213,19 +228,12 @@ export function MiniPlayer({
                     isMobile
                   />
                 )}
-                {onToggleRepeat && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onToggleRepeat}
-                    className={`h-11 w-11 touch-manipulation ${repeatMode !== "off" ? "text-primary" : ""}`}
-                  >
-                    {repeatMode === "one" ? (
-                      <Repeat1 className="h-5 w-5" />
-                    ) : (
-                      <Repeat className="h-5 w-5" />
-                    )}
-                  </Button>
+                {onSpeedChange && (
+                  <SpeedControl
+                    playbackSpeed={playbackSpeed}
+                    onSpeedChange={onSpeedChange}
+                    isMobile
+                  />
                 )}
               </div>
             </div>

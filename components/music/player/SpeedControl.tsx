@@ -13,6 +13,7 @@ import { Gauge } from "lucide-react";
 interface SpeedControlProps {
   playbackSpeed: number;
   onSpeedChange: (speed: number) => void;
+  isMobile?: boolean;
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -20,6 +21,7 @@ const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 export function SpeedControl({
   playbackSpeed,
   onSpeedChange,
+  isMobile = false,
 }: SpeedControlProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,12 +36,14 @@ export function SpeedControl({
         <Button
           variant="ghost"
           size="icon"
-          className={`h-9 w-9 sm:h-10 sm:w-10 touch-manipulation ${
+          className={`${isMobile ? "h-9 w-9" : "h-9 w-9 sm:h-10 sm:w-10"} touch-manipulation ${
             playbackSpeed !== 1 ? "text-primary" : ""
           }`}
           title={`Tốc độ phát: ${formatSpeed(playbackSpeed)}`}
         >
-          <Gauge className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Gauge
+            className={`${isMobile ? "h-4 w-4" : "h-4 w-4 sm:h-5 sm:w-5"}`}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
